@@ -13,7 +13,7 @@ Follow these steps to set up and launch the backend:
 
 1. Clone the repository (if you haven't yet)
 
-    git clone https://github.com/your-org/project-management-app.git
+    git clone https://github.com/...
     cd backend
 
 2. Install dependencies
@@ -26,6 +26,8 @@ We are using SQLite (no installation needed). Prisma will handle DB generation a
 
     npx prisma migrate dev --name init
 
+To access the db on the browser go to http://localhost:5555
+
 This will:
 - Create a local SQLite database (dev.db)
 - Apply the database schema
@@ -34,6 +36,8 @@ This will:
 4. Run the development server
 
     npx nodemon
+
+The backend will be running on port 5001
 
 ------------------------------------------------------------
 
