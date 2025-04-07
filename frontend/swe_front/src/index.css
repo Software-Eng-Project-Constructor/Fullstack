@@ -1,0 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: "Inter", sans-serif;
+
+  /* Colors */
+  --text-primary: #e4e4e7; /* Soft white */
+  --text-muted: #a1a1aa; /* Muted gray */
+  --bg-dark: #08090a; /* Dark background */
+
+  /* 8-Point Grid Spacing */
+  --space-0: 0px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+
+  /* Typography Sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 40px;
+  --text-5xl: 48px;
+}
+
+/* Global Styles */
+html,
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-dark);
+}
+
+/* Utility Classes */
+.text-muted {
+  color: var(--text-muted);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Add padding only to sections that need it */
+.page-content {
+  padding: var(--space-4);
+}

@@ -1,0 +1,48 @@
+{
+  "projects": [
+    {
+      "id": "1",
+      "name": "Project Alpha"
+    },
+    {
+      "id": "a8cd",
+      "name": "Project Beta"
+    },
+    {
+      "id": "de1d",
+      "name": "project 1"
+    },
+    {
+      "id": "b3a0",
+      "name": "hey"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "101",
+      "projectId": 1,
+      "title": "Fix login",
+      "done": false
+    }
+  ],
+  "events": [
+    {
+      "id": "1",
+      "title": "Project Kickoff",
+      "description": "Initial meeting to align scope",
+      "startDate": "2025-03-28",
+      "endDate": "2025-03-28",
+      "priority": "high",
+      "category": "work"
+    },
+    {
+      "id": "1743089111657",
+      "title": "eventr 1",
+      "description": "aaa",
+      "startDate": "2025-03-29",
+      "endDate": "2025-03-29",
+      "priority": "high",
+      "category": "work"
+    }
+  ]
+}
