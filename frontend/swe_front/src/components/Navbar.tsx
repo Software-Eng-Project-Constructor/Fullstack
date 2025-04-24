@@ -1,8 +1,10 @@
+import Logo from '../components/Logo';
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { FaBell, FaEnvelope, FaUserAlt } from "react-icons/fa";
 import Button from "../components/Button";
 import { useAuth } from "../context/AuthContext";
+
 
 function Navbar() {
   const { isLoggedIn } = useAuth();
@@ -17,7 +19,7 @@ function Navbar() {
       <div className="container flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-white">
-          LOGO
+          <Logo />
         </Link>
 
         {/* Navigation */}

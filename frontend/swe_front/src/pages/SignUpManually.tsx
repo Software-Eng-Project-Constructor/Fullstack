@@ -11,7 +11,7 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 function SignUpManually() {
   const nameRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLParagraphElement>(null);
-
+  const [showPassword, setShowPassword] = useState(false); //show password thing
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,20 +117,28 @@ function SignUpManually() {
               </p>
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-gray-300 font-medium mb-1">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
                 required
-                className="w-full p-3 bg-[#1C1C1C]/80 border border-gray-700 rounded-lg text-white"
+                className="w-full p-3 bg-[#1C1C1C]/80 border border-gray-700 rounded-lg text-white pr-16"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-4 flex items-center text-sm text-gray-400 hover:text-white"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
               <p className="text-red-500 text-xs h-4 p-1">
                 {!validPassword && password
-                  ? "8-24 chars, 1 uppercase, 1 lowercase, 1 number, 1 special."
+                  ? "Must be 8-24 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char."
                   : ""}
               </p>
             </div>

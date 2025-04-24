@@ -101,7 +101,7 @@ function Dashboard() {
       >
         {/* ✅ Top Navbar */}
         <div className="flex justify-between items-center p-4 bg-gray-900 border-b border-gray-800">
-          <div className="text-xl font-semibold text-white">Dashboard</div>
+          <div className="ml-10 text-xl font-semibold text-white">Dashboard</div>
           {user && (
             <div className="flex items-center gap-4 text-white">
               <span className="text-sm">👋 {user.name}</span>
