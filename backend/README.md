@@ -50,6 +50,12 @@ Tips for Beginners
     be reflected automatically.
 
 ------------------------------------------------------------
+5. Extra
+
+In case the backend does not work add a ".env" file in the backend directory
+and write DATABASE_URL="file:./dev.db" inside of it!
+
+------------------------------------------------------------
 
 Useful Commands
 
