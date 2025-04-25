@@ -83,7 +83,7 @@ const Calendar: React.FC = () => {
       ...formData,
     };
 
-    await axios.post("http://localhost:3001/events", newEvent);
+    await axios.post("http://localhost:5001/events", newEvent);
     setEvents([...events, newEvent]);
     setFormData({
       title: "",
@@ -97,7 +97,7 @@ const Calendar: React.FC = () => {
   };
 
   const handleDeleteEvent = async (id: string) => {
-    await axios.delete(`http://localhost:3001/events/${id}`);
+    await axios.delete(`http://localhost:5001/events/${id}`);
     setEvents(events.filter((e) => e.id !== id));
     setViewEvent(null);
     
