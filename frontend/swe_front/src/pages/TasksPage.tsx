@@ -25,18 +25,18 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
   });
   const [showTaskModal, setShowTaskModal] = useState(false);
   const handleDeleteTask = async (taskId: number) => {
-    await axios.delete(`http://localhost:3001/tasks/${taskId.toString()}`);
+    await axios.delete(`http://localhost:5001/tasks/${taskId.toString()}`);
     setTasks(tasks.filter((task) => task.id !== taskId));
   };
   
   useEffect(() => {
-    axios.get(`http://localhost:3001/tasks?projectId=${projectId}`).then((res) => {
+    axios.get(`http://localhost:5001/tasks?projectId=${projectId}`).then((res) => {
       setTasks(res.data);
     });
   }, [projectId]);
 
   const handleAddTask = async () => {
-    const res = await axios.post("http://localhost:3001/tasks", newTask);
+    const res = await axios.post("http://localhost:5001/tasks", newTask);
     setTasks([...tasks, res.data]);
     setShowTaskModal(false);
     setNewTask({ ...newTask, title: "", description: "", assignedTo: "" });

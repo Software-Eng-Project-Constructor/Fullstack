@@ -26,10 +26,14 @@ function Home() {
           />
 
           {/* Button & Text (Lifted to ~70% of Image Height) */}
-          <div className="flex-1 flex flex-col justify-end pb-[calc(100%/3)] items-center gap-y-6">
+          <div className="flex-1 flex flex-col justify-end pb-[calc(100%/3)] items-center gap-y-6 my-20">
             <p className="text-2xl font-sans">Get started in seconds</p>
             <Button text="Get Started" link="/signup" />
           </div>
+        </div>
+        <div className="flex items-center gap-x-8 ml-260 mt-2">
+          <Button text="About" link="/About" />
+          <Button text="Contact" link="/Contact" />
         </div>
       </main>
 
