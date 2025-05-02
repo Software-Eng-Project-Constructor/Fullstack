@@ -11,7 +11,9 @@ import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <AuthProvider> {/* Wrap your app with AuthProvider */}
+    <AuthProvider>
+      {" "}
+      {/* Wrap your app with AuthProvider */}
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />

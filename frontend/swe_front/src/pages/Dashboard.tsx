@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import OverviewPage from "./OverviewPage";
 import TasksPage from "./TasksPage";
@@ -8,9 +8,7 @@ import Calendar from "./Calendar";
 import Files from "./Files";
 import { FaTimes } from "react-icons/fa";
 
-// 👇 Make sure cookies (sessions) are sent bc this is a protected page
 axios.defaults.withCredentials = true;
-
 const API_URL = "http://localhost:5001";
 
 interface Project {
@@ -25,7 +23,8 @@ interface User {
 }
 
 function Dashboard() {
-  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null | undefined>(undefined);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Overview");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -33,57 +32,59 @@ function Dashboard() {
   const [newProjectName, setNewProjectName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ Check session user on page load
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/me`);
-        setUser(res.data.user);
-      } catch (err) {
-        window.location.href = "/signin"; // Redirect if not authenticated
-      }
-    };
-    checkAuth();
+    axios
+      .get(`${API_URL}/api/auth/me`)
+      .then((res) => setUser(res.data.user))
+      .catch(() => setUser(null));
   }, []);
 
-  // ✅ Fetch projects
+  useEffect(() => {
+    if (user === null) {
+      navigate("/signin");
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     if (!user) return;
-
-    const fetchProjects = async () => {
-      const response = await axios.get(`${API_URL}/projects`);
-      setProjects(response.data);
-      if (response.data.length > 0) {
-        setActiveProjectId(response.data[0].id);
+    axios.get(`${API_URL}/api/projects`).then((res) => {
+      setProjects(res.data);
+      if (res.data.length > 0) {
+        setActiveProjectId(res.data[0].id);
       }
-    };
-
-    fetchProjects();
+    });
   }, [user]);
 
   const handleAddProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    const response = await axios.post(`${API_URL}/projects`, {
+    const res = await axios.post(`${API_URL}/api/projects`, {
       name: newProjectName,
     });
-    setProjects((prev) => [...prev, response.data]);
-    setActiveProjectId(response.data.id);
+    setProjects((prev) => [...prev, res.data]);
+    setActiveProjectId(res.data.id);
     setNewProjectName("");
     setIsModalOpen(false);
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    await axios.delete(`${API_URL}/projects/${projectId}`);
-    setProjects(projects.filter((project) => project.id !== projectId));
+    await axios.delete(`${API_URL}/api/projects/${projectId}`);
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
   };
 
-  // ✅ Logout session
   const handleLogout = async () => {
-    await axios.post(`${API_URL}/logout`);
+    await axios.post(`${API_URL}/api/auth/logout`);
     setUser(null);
-    window.location.href = "/signin";
+    navigate("/signin");
   };
+
+  if (user === undefined) {
+    return (
+      <div className="flex items-center justify-center h-screen text-white">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -99,9 +100,10 @@ function Dashboard() {
           isSidebarOpen ? "ml-64" : "ml-0"
         }`}
       >
-        {/* ✅ Top Navbar */}
         <div className="flex justify-between items-center p-4 bg-gray-900 border-b border-gray-800">
-          <div className="ml-10 text-xl font-semibold text-white">Dashboard</div>
+          <div className="ml-10 text-xl font-semibold text-white">
+            Dashboard
+          </div>
           {user && (
             <div className="flex items-center gap-4 text-white">
               <span className="text-sm">👋 {user.name}</span>
@@ -115,7 +117,6 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Project Tabs */}
         <div className="bg-[#1C1D1D] p-4 flex flex-wrap gap-2">
           {projects.map((project) => (
             <div key={project.id} className="relative">
@@ -149,7 +150,6 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-[#1C1D1D] p-6 rounded-lg w-96">
@@ -180,7 +180,6 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Main Content */}
         <div className="tab-content flex-1 overflow-y-auto p-4 bg-gray-900 text-white">
           {activeTab === "Overview" && activeProjectId && (
             <OverviewPage projectId={activeProjectId} />

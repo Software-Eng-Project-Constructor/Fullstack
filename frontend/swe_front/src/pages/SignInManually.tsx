@@ -4,10 +4,10 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-
 
 function SignIn() {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -20,6 +20,8 @@ function SignIn() {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -43,17 +45,18 @@ function SignIn() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5001/signin", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5001/api/auth/signin",
+        {
+          email,
+          password,
+        }
+      );
 
       console.log("LOGIN SUCCESS:", response.data);
       // alert(`Welcome, ${response.data.user.name}!`);
 
-      setTimeout(() => {
-        window.location.href = "http://localhost:5173/dashboard";
-      }, 200);
+      navigate("/dashboard");
     } catch (err: any) {
       console.error("LOGIN ERROR:", err);
       setErrorMsg(err?.response?.data?.message || "Login failed.");
@@ -96,7 +99,7 @@ function SignIn() {
                 {!validEmail && email ? "Enter a valid email address." : ""}
               </p>
             </div>
-            
+
             <div className="relative">
               <label className="block text-gray-300 font-medium mb-1">
                 Password
@@ -122,7 +125,6 @@ function SignIn() {
                   : ""}
               </p>
             </div>
-            
 
             <button
               type="submit"

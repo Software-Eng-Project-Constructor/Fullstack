@@ -46,11 +46,14 @@ function SignUpManually() {
     }
 
     try {
-      const response = await axios.post("http://localhost:5001/signup", {
-        name,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5001/api/auth/signup",
+        {
+          name,
+          email,
+          password,
+        }
+      );
 
       console.log("SIGNUP SUCCESS", response.data);
       // alert(`Welcome, ${response.data.user.name}!`);
