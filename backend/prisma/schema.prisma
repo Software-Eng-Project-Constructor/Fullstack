@@ -97,7 +97,6 @@ model Task {
   project         Project          @relation(fields: [projectId], references: [id])
   milestone       Milestone?       @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   taskAssignments TaskAssignment[]
-  statusRel       TaskStatus?      @relation("StatusTasks", fields: [status], references: [name])
   comments        Comment[]
 }
 
@@ -118,7 +117,6 @@ model TaskStatus {
   projectId  Int
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]  @relation("StatusTasks")
 }
 
 model Comment {
