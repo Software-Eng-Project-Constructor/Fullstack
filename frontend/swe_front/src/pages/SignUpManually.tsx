@@ -5,6 +5,8 @@ axios.defaults.withCredentials = true;
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
+axios.defaults.withCredentials = true;
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 

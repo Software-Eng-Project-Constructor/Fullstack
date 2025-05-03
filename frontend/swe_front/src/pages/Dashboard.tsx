@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import OverviewPage from "./OverviewPage";
 import TasksPage from "./TasksPage";
 import Calendar from "./Calendar";
 import Files from "./Files";
 import { FaTimes } from "react-icons/fa";
+import axios from "axios";
 
 axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:5001";
@@ -34,7 +34,7 @@ function Dashboard() {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/api/auth/me`)
+      .get(`${API_URL}/api/auth/me`, { withCredentials: true }) // ✅ Explicitly required
       .then((res) => setUser(res.data.user))
       .catch(() => setUser(null));
   }, []);
@@ -47,20 +47,24 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    axios.get(`${API_URL}/api/projects`).then((res) => {
-      setProjects(res.data);
-      if (res.data.length > 0) {
-        setActiveProjectId(res.data[0].id);
-      }
-    });
+    axios
+      .get(`${API_URL}/api/projects`, { withCredentials: true }) // ✅ Add credentials
+      .then((res) => {
+        setProjects(res.data);
+        if (res.data.length > 0) {
+          setActiveProjectId(res.data[0].id);
+        }
+      });
   }, [user]);
 
   const handleAddProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    const res = await axios.post(`${API_URL}/api/projects`, {
-      name: newProjectName,
-    });
+    const res = await axios.post(
+      `${API_URL}/api/projects`,
+      { name: newProjectName },
+      { withCredentials: true } // ✅ Add credentials
+    );
     setProjects((prev) => [...prev, res.data]);
     setActiveProjectId(res.data.id);
     setNewProjectName("");
@@ -68,12 +72,24 @@ function Dashboard() {
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    await axios.delete(`${API_URL}/api/projects/${projectId}`);
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    await axios.delete(`${API_URL}/api/projects/${projectId}`, {
+      withCredentials: true, // ✅ Add credentials
+    });
+    setProjects((prev) => {
+      const updated = prev.filter((p) => p.id !== projectId);
+      if (updated.length === 0) {
+        setActiveProjectId(null);
+      } else if (projectId === activeProjectId) {
+        setActiveProjectId(updated[0].id);
+      }
+      return updated;
+    });
   };
 
   const handleLogout = async () => {
-    await axios.post(`${API_URL}/api/auth/logout`);
+    await axios.post(`${API_URL}/api/auth/logout`, null, {
+      withCredentials: true, // ✅ Add credentials
+    });
     setUser(null);
     navigate("/signin");
   };
@@ -119,7 +135,7 @@ function Dashboard() {
 
         <div className="bg-[#1C1D1D] p-4 flex flex-wrap gap-2">
           {projects.map((project) => (
-            <div key={project.id} className="relative">
+            <div key={project.id} className="relative flex items-center">
               <button
                 onClick={() => setActiveProjectId(project.id)}
                 className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
@@ -129,16 +145,19 @@ function Dashboard() {
                 }`}
               >
                 <span>{project.name}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteProject(project.id);
-                  }}
-                  className="text-red-600 hover:text-red-700 text-lg"
-                >
-                  <FaTimes />
-                </button>
               </button>
+
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteProject(project.id);
+                }}
+                className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
+              >
+                <FaTimes />
+              </span>
             </div>
           ))}
 
@@ -185,7 +204,7 @@ function Dashboard() {
             <OverviewPage projectId={activeProjectId} />
           )}
           {activeTab === "Tasks" && activeProjectId && (
-            <TasksPage projectId={activeProjectId} />
+            <TasksPage projectId={activeProjectId} user={user} />
           )}
           {activeTab === "Calendar" && <Calendar />}
           {activeTab === "Files" && activeProjectId && (

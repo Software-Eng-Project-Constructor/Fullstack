@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
+axios.defaults.withCredentials = true;
+
 function SignIn() {
   const emailRef = useRef<HTMLInputElement>(null);
   const errRef = useRef<HTMLParagraphElement>(null);
@@ -50,6 +52,9 @@ function SignIn() {
         {
           email,
           password,
+        },
+        {
+          withCredentials: true,
         }
       );
 

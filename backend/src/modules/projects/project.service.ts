@@ -2,10 +2,18 @@ import { prisma } from "../../core/prismaClient";
 import { CreateProjectDTO, UpdateProjectDTO } from "./project.validation";
 
 export const createProject = (dto: CreateProjectDTO, ownerId: string) => {
-  return prisma.project.create({
-    data: { ...dto, ownerId }
-  });
+  const data: any = {
+    name: dto.name,
+    ownerId
+  };
+
+  if (dto.description) data.description = dto.description;
+  if (dto.startDate) data.startDate = new Date(dto.startDate); // cast if string
+  if (dto.dueDate) data.dueDate = new Date(dto.dueDate);
+
+  return prisma.project.create({ data });
 };
+
 
 export const getProjectsByOwner = (ownerId: string) => {
   return prisma.project.findMany({

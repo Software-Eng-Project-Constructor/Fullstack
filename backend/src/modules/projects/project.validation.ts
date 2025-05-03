@@ -4,7 +4,7 @@ import { z } from "zod";
 export const createProjectSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  startDate: z.string().datetime(),
+  startDate: z.string().datetime().optional(),
   dueDate: z.string().datetime().optional()
 });
 
@@ -12,7 +12,7 @@ export const createProjectSchema = z.object({
 export const updateProjectSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  startDate: z.string().datetime().optional(),
+  startDate: z.string().datetime(),
   dueDate: z.string().datetime().optional()
 });
 

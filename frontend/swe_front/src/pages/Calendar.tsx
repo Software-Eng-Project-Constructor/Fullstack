@@ -24,7 +24,7 @@ interface EventData {
 const Calendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
-  
+
   const [viewEvent, setViewEvent] = useState<EventData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Omit<EventData, "id">>({
@@ -43,7 +43,7 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await axios.get("http://localhost:3001/events");
+      const res = await axios.get("http://localhost:5001/events");
       setEvents(res.data);
     };
     fetchEvents();
@@ -51,7 +51,6 @@ const Calendar: React.FC = () => {
 
   const handleDayClick = (date: Date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
-    
 
     const matchedEvent = events.find(
       (event) =>
@@ -72,7 +71,11 @@ const Calendar: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -100,7 +103,6 @@ const Calendar: React.FC = () => {
     await axios.delete(`http://localhost:5001/events/${id}`);
     setEvents(events.filter((e) => e.id !== id));
     setViewEvent(null);
-    
   };
 
   const changeMonth = (offset: number) => {

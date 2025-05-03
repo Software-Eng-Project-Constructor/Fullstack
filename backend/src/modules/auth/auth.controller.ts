@@ -43,7 +43,7 @@ export async function signin(req: Request, res: Response) {
       name: user.name,
       email: user.email
     };
-
+    console.log("Session after login:", req.session);
     return res.json({ user: req.session!.user });
   } catch (error) {
     console.error("Signin error:", error);
@@ -52,12 +52,13 @@ export async function signin(req: Request, res: Response) {
 }
 
 export function whoAmI(req: Request, res: Response) {
-  if (req.session!.user) {
-    res.json({ user: req.session!.user });
-  } else {
-    res.status(401).json({ message: "Not authenticated" });
+  console.log("SESSION in /me:", req.session);
+  if (req.session?.user) {
+    return res.json({ user: req.session.user });
   }
+  return res.status(401).json({ message: "Not authenticated" });
 }
+
 
 export function logout(req: Request, res: Response) {
   req.session!.destroy(err => {

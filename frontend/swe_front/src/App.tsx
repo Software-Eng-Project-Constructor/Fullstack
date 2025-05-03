@@ -8,6 +8,10 @@ import SignUpManually from "./pages/SignUpManually";
 import SignUpOptions from "./pages/signUpOptions";
 import SignInOptions from "./pages/SignInOptions";
 import Dashboard from "./pages/Dashboard";
+import axios from "axios";
+
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "http://localhost:5001";
 
 function App() {
   return (

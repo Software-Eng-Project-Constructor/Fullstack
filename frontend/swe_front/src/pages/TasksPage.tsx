@@ -1,48 +1,87 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaTrash } from "react-icons/fa";
+
+axios.defaults.withCredentials = true;
+
 interface Task {
-  id: number;
+  id: string;
   projectId: number;
   title: string;
-  description: string;
-  assignedTo: string;
-  status: string;
+  description?: string;
+  createdById: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
 interface TasksPageProps {
   projectId: number;
+  user: User | null;
 }
 
-const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
+const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
+  if (!user) return <p className="text-red-500">User not loaded</p>;
+
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState<Omit<Task, "id">>({
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    assignedTo: "",
-    status: "Pending Approval",
-    projectId,
   });
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const handleDeleteTask = async (taskId: number) => {
-    await axios.delete(`http://localhost:5001/tasks/${taskId.toString()}`);
-    setTasks(tasks.filter((task) => task.id !== taskId));
-  };
-  
-  useEffect(() => {
-    axios.get(`http://localhost:5001/tasks?projectId=${projectId}`).then((res) => {
+
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5001/api/tasks?projectId=${projectId}`,
+        { withCredentials: true } // ✅ Required
+      );
       setTasks(res.data);
-    });
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
   }, [projectId]);
 
   const handleAddTask = async () => {
-    const res = await axios.post("http://localhost:5001/tasks", newTask);
-    setTasks([...tasks, res.data]);
-    setShowTaskModal(false);
-    setNewTask({ ...newTask, title: "", description: "", assignedTo: "" });
+    const taskPayload = {
+      ...newTask,
+      createdById: user.id,
+      projectId,
+    };
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5001/api/tasks",
+        taskPayload,
+        { withCredentials: true } // ✅ Required
+      );
+      setTasks((prev) => [...prev, res.data]);
+      setShowTaskModal(false);
+      setNewTask({ title: "", description: "" });
+    } catch (err) {
+      console.error("Failed to create task:", err);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await axios.delete(`http://localhost:5001/api/tasks/${taskId}`, {
+        withCredentials: true, // ✅ Required
+      });
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    } catch (err) {
+      console.error("Failed to delete task:", err);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewTask((prev) => ({ ...prev, [name]: value }));
   };
@@ -50,6 +89,7 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
   return (
     <div className="p-6 bg-[#0F0F0F] text-gray-200">
       <h2 className="text-2xl font-bold text-orange-500 mb-4">Tasks</h2>
+
       <button
         onClick={() => setShowTaskModal(true)}
         className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded mb-6"
@@ -65,33 +105,15 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
               placeholder="Title"
               value={newTask.title}
               onChange={handleChange}
-              className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white"
+              className="w-full mb-2 p-2 rounded bg-[#0F0F0F]"
             />
             <input
               name="description"
               placeholder="Description"
               value={newTask.description}
               onChange={handleChange}
-              className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white"
+              className="w-full mb-4 p-2 rounded bg-[#0F0F0F]"
             />
-            <input
-              name="assignedTo"
-              placeholder="Assigned To"
-              value={newTask.assignedTo}
-              onChange={handleChange}
-              className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white"
-            />
-            <select
-              name="status"
-              value={newTask.status}
-              onChange={handleChange}
-              className="w-full mb-4 p-2 rounded bg-[#0F0F0F] text-white"
-            >
-              <option>Pending Approval</option>
-              <option>Approved</option>
-              <option>In Progress</option>
-              <option>Status Negative</option>
-            </select>
             <div className="flex justify-between">
               <button
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
@@ -99,7 +121,6 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
               >
                 Create
               </button>
-              
               <button
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
                 onClick={() => setShowTaskModal(false)}
@@ -111,27 +132,25 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId }) => {
         </div>
       )}
 
-<ul className="space-y-4">
-  {tasks.map((task) => (
-    <li key={task.id} className="p-4 bg-[#1C1D1D] rounded shadow flex justify-between items-center">
-      <div>
-        <h3 className="text-lg text-orange-400">{task.title}</h3>
-        <p className="text-gray-300">{task.description}</p>
-        <p className="text-sm text-gray-400">
-          Assigned to: {task.assignedTo} | Status: {task.status}
-        </p>
-      </div>
-      <button
-        onClick={() => handleDeleteTask(task.id)}
-        className="text-red-600 hover:text-red-700 text-xl"
-      >
-        <FaTrash />
-      </button>
-    </li>
-  ))}
-</ul>
-
-
+      <ul className="space-y-4">
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className="p-4 bg-[#1C1D1D] rounded shadow flex justify-between items-center"
+          >
+            <div>
+              <h3 className="text-lg text-orange-400">{task.title}</h3>
+              <p className="text-gray-300">{task.description}</p>
+            </div>
+            <button
+              onClick={() => handleDeleteTask(task.id)}
+              className="text-red-600 hover:text-red-700 text-xl"
+            >
+              <FaTrash />
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

@@ -9,7 +9,7 @@
 2. **Start the JSON Server**:
 
    ```
-   json-server --watch db.json --port 3001
+   json-server --watch db.json --port 5001
    ```
 
 3. **Start the development server**:
