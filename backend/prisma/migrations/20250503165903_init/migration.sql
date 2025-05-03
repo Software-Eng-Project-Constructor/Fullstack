@@ -151,7 +151,4 @@ CREATE TABLE "Event" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TeamMember_projectId_userId_key" ON "TeamMember"("projectId", "userId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "TaskStatus_name_key" ON "TaskStatus"("name");
