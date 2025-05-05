@@ -39,6 +39,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);                    // open
 app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
+app.use("/api/teams", authGuard, taskRoutes);        // protected
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));

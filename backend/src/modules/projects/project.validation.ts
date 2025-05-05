@@ -16,5 +16,6 @@ export const updateProjectSchema = z.object({
   dueDate: z.string().datetime().optional()
 });
 
+
 export type CreateProjectDTO = z.infer<typeof createProjectSchema>;
 export type UpdateProjectDTO = z.infer<typeof updateProjectSchema>;
