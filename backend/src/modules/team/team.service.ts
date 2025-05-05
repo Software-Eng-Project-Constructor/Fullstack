@@ -18,7 +18,7 @@ export const getTeamMembers = async (projectId: number) => {
         select: {
           id: true,
           email: true,
-          name: true // if you have name field
+          name: true 
         }
       }
     }
@@ -54,13 +54,29 @@ export const createTeamMemberWrapper = async (
   if(!user){
     throw new Error("User with that email does not exist.");
   }
+  const existingMember = await prisma.teamMember.findFirst({
+    where: {
+      userId: user.id,
+      projectId: dto.projectId,
+    },
+  });
+
+  if (existingMember) {
+    const updated = await prisma.teamMember.update({
+      where: { id: existingMember.id },
+      data: { role: dto.role },
+    });
+    return updated;
+  }
+
+
   const data: any ={
     userId: user.id,
     projectId: dto.projectId,
     role: dto.role,
   }
   console.log(data)
-  return createTeamMember(data); // Use existing function
+  return createTeamMember(data); 
 };
 
 
