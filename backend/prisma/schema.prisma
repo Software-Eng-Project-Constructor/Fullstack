@@ -69,8 +69,8 @@ model Milestone {
   updatedAt   DateTime @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]
   events  Event[]
+  Task    Task[]
 }
 
 model Task {

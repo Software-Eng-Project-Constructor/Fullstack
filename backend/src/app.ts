@@ -6,6 +6,7 @@ import authRoutes from "./modules/auth/auth.routes";
 import projectRoutes from "./modules/projects/project.routes";
 import { authGuard } from "./core/middleware/authGuard";
 import taskRoutes from "./modules/tasks/task.routes";
+import teamRoutes from "./modules/team/team.routes"
 import cors from "cors";
 
 
@@ -39,7 +40,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);                    // open
 app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
-app.use("/api/teams", authGuard, taskRoutes);        // protected
+app.use("/api/teams", authGuard, teamRoutes);        // protected
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));

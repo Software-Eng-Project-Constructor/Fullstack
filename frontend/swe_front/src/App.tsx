@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ApiTester from './components/apitester';
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -21,6 +22,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/tester" element={<ApiTester />} />
           <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
           <Route path="signin" element={<SignInOptions />} />
