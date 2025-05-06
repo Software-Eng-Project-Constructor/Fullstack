@@ -26,45 +26,98 @@ interface TasksPageProps {
 const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
   if (!user) return <p className="text-red-500">User not loaded</p>;
 
+  // --- core state
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [showTaskModal, setShowTaskModal] = useState(false);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-  });
+  const [assignedMap, setAssignedMap] = useState<Record<string, User[]>>({});
+  const [projectUsers, setProjectUsers] = useState<User[]>([]);
 
+  // --- modal state
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTask, setNewTask] = useState({ title: "", description: "" });
+  const [assignedTo, setAssignedTo] = useState<string[]>([]); // selected user IDs in modal
+
+  // fetch all tasks
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5001/api/tasks?projectId=${projectId}`,
-        { withCredentials: true } // ✅ Required
+      const res = await axios.get<Task[]>(
+        `http://localhost:5001/api/tasks?projectId=${projectId}`
       );
       setTasks(res.data);
+
+      // then fetch assigned users for each task
+      const map: Record<string, User[]> = {};
+      await Promise.all(
+        res.data.map(async (t) => {
+          const r = await axios.get<User[]>(
+            `http://localhost:5001/api/tasks/${t.id}/users`
+          );
+          map[t.id] = r.data;
+        })
+      );
+      setAssignedMap(map);
     } catch (err) {
-      console.error("Error fetching tasks:", err);
+      console.error("Error fetching tasks or assignments:", err);
+    }
+  };
+
+  // fetch project users
+  const fetchProjectUsers = async () => {
+    try {
+      const res = await axios.get<User[]>(
+        `http://localhost:5001/api/Teams/${projectId}`
+      );
+      console.log("AAAAAAAAAAAAAAAAAAAAAA")
+      setProjectUsers(res.data);
+    } catch (err) {
+      console.error("Error fetching project users:", err);
     }
   };
 
   useEffect(() => {
+    fetchProjectUsers();
     fetchTasks();
   }, [projectId]);
 
+  // handle modal input
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewTask((prev) => ({ ...prev, [name]: value }));
+  };
+  const toggleAssign = (userId: string) => {
+    setAssignedTo((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  // create task with assignments
   const handleAddTask = async () => {
-    const taskPayload = {
+    const payload = {
       ...newTask,
       createdById: user.id,
       projectId,
+      assignedTo: assignedTo,        // include this in your backend DTO
     };
 
     try {
-      const res = await axios.post(
+      const res = await axios.post<Task>(
         "http://localhost:5001/api/tasks",
-        taskPayload,
-        { withCredentials: true } // ✅ Required
+        payload
       );
-      setTasks((prev) => [...prev, res.data]);
+      const created = res.data;
+      setTasks((prev) => [...prev, created]);
+
+      // assume backend returns assignments or refetch:
+      const r2 = await axios.get<User[]>(
+        `http://localhost:5001/api/tasks/${created.id}/users`
+      );
+      setAssignedMap((m) => ({ ...m, [created.id]: r2.data }));
+
+      // reset modal
       setShowTaskModal(false);
       setNewTask({ title: "", description: "" });
+      setAssignedTo([]);
     } catch (err) {
       console.error("Failed to create task:", err);
     }
@@ -72,18 +125,16 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
 
   const handleDeleteTask = async (taskId: string) => {
     try {
-      await axios.delete(`http://localhost:5001/api/tasks/${taskId}`, {
-        withCredentials: true, // ✅ Required
+      await axios.delete(`http://localhost:5001/api/tasks/${taskId}`);
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setAssignedMap((m) => {
+        const copy = { ...m };
+        delete copy[taskId];
+        return copy;
       });
-      setTasks((prev) => prev.filter((task) => task.id !== taskId));
     } catch (err) {
       console.error("Failed to delete task:", err);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewTask((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -114,18 +165,46 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
               onChange={handleChange}
               className="w-full mb-4 p-2 rounded bg-[#0F0F0F]"
             />
+
+            {/* ─── Assigned To multi-select ───────────────────────────────── */}
+            <div className="mb-4">
+              <p className="mb-2">Assigned To:</p>
+              <div className="max-h-40 overflow-auto bg-[#0F0F0F] p-2 rounded">
+                {projectUsers.map((u) => (
+                  <label
+                    key={u.id}
+                    className="flex items-center mb-1 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={assignedTo.includes(u.id)}
+                      onChange={() => toggleAssign(u.id)}
+                    />
+                    {u.name}
+                  </label>
+                ))}
+                {projectUsers.length === 0 && (
+                  <p className="text-gray-500">No users in this project</p>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-between">
+              <button
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
+                onClick={() => {
+                  setShowTaskModal(false);
+                  setAssignedTo([]);
+                }}
+              >
+                Cancel
+              </button>
               <button
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
                 onClick={handleAddTask}
               >
                 Create
-              </button>
-              <button
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded"
-                onClick={() => setShowTaskModal(false)}
-              >
-                Cancel
               </button>
             </div>
           </div>
@@ -136,18 +215,29 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
         {tasks.map((task) => (
           <li
             key={task.id}
-            className="p-4 bg-[#1C1D1D] rounded shadow flex justify-between items-center"
+            className="p-4 bg-[#1C1D1D] rounded shadow"
           >
-            <div>
-              <h3 className="text-lg text-orange-400">{task.title}</h3>
-              <p className="text-gray-300">{task.description}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg text-orange-400">{task.title}</h3>
+                <p className="text-gray-300">{task.description}</p>
+
+                {/* ─── Show assigned users ─────────────────────────────────── */}
+                <div className="mt-2">
+                  <strong className="text-gray-400">Assigned:</strong>{" "}
+                  {assignedMap[task.id]?.length
+                    ? assignedMap[task.id].map((u) => u.name).join(", ")
+                    : "None"}
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleDeleteTask(task.id)}
+                className="text-red-600 hover:text-red-700 text-xl ml-4"
+              >
+                <FaTrash />
+              </button>
             </div>
-            <button
-              onClick={() => handleDeleteTask(task.id)}
-              className="text-red-600 hover:text-red-700 text-xl"
-            >
-              <FaTrash />
-            </button>
           </li>
         ))}
       </ul>

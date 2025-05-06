@@ -40,3 +40,18 @@ export const deleteTask = async (req: Request, res: Response) => {
   await Service.deleteTask(taskId);
   res.json({ message: "Task deleted" });
 };
+
+export const getAssignedUsers = async (req: Request, res: Response) => {
+  const taskId = req.params.id;
+
+  if (!taskId) {
+    return res.status(400).json({ message: "Invalid task ID" });
+  }
+  try {
+    const users = await Service.getAssignedUsers(taskId);
+    res.json(users);
+  } catch (error) {
+    console.error("Error in getAssignedUsers:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

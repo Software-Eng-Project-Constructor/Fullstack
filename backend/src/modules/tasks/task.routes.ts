@@ -7,5 +7,6 @@ router.post("/", taskController.createTask); // ✅ this handles POST /api/tasks
 router.get("/", taskController.getTasks);
 router.patch("/:id", taskController.updateTask);
 router.delete("/:id", taskController.deleteTask);
+router.get("/:id/users", taskController.getAssignedUsers);
 
 export default router;
