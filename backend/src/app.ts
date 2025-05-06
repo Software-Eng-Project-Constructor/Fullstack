@@ -8,7 +8,7 @@ import { authGuard } from "./core/middleware/authGuard";
 import taskRoutes from "./modules/tasks/task.routes";
 import teamRoutes from "./modules/team/team.routes"
 import cors from "cors";
-
+import eventsRouter from "./modules/event/event.routes"
 
 const app = express();
 
@@ -41,6 +41,8 @@ app.use("/api/auth", authRoutes);                    // open
 app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
 app.use("/api/teams", authGuard, teamRoutes);        // protected
+app.use("/events", eventsRouter);
+
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));
