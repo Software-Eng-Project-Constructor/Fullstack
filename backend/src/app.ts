@@ -9,6 +9,7 @@ import taskRoutes from "./modules/tasks/task.routes";
 import teamRoutes from "./modules/team/team.routes"
 import cors from "cors";
 import eventsRouter from "./modules/event/event.routes"
+import userRoutes from "./modules/users/users.routes";
 
 const app = express();
 
@@ -34,7 +35,7 @@ app.use((req, res, next) => {
 
 
 // ✅ Then: body parsing
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }))
 
 // ✅ Then: routes
 app.use("/api/auth", authRoutes);                    // open
@@ -42,7 +43,7 @@ app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
 app.use("/api/teams", authGuard, teamRoutes);        // protected
 app.use("/events", eventsRouter);
-
+app.use("/api/users", authGuard, userRoutes); //Salamario code
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));

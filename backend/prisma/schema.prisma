@@ -15,6 +15,11 @@ model User {
   privilege String   @default("Viewer")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  description      String?
+  theme            String   @default("dark")
+  audioNotification Boolean @default(true)
+  profilePicPath   String?
 
   createdTasks  Task[] @relation("CreatedTasks")
   tasksAssigned Task[] @relation("AssignedTasks")
@@ -36,6 +41,7 @@ model Project {
   ownerId     String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
 
   owner       User         @relation("OwnerProjects", fields: [ownerId], references: [id])
   teamMembers TeamMember[]

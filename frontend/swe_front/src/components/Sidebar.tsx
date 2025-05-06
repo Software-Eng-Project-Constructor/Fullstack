@@ -25,7 +25,7 @@ function Sidebar({ isOpen, activeTab, onTabChange, toggleSidebar }: SidebarProps
         }`}
       >
         <nav className="mt-16 space-y-2">
-          {["Overview", "Tasks", "Calendar", "Files"].map((tab) => (
+          {["Overview", "Tasks", "Calendar", "Files","Settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}

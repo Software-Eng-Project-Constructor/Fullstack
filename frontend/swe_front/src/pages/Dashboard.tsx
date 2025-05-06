@@ -6,6 +6,7 @@ import TasksPage from "./TasksPage";
 import Calendar from "./Calendar";
 import Files from "./Files";
 import { FaTimes } from "react-icons/fa";
+import Settings from "./Settings"
 import axios from "axios";
 
 axios.defaults.withCredentials = true;
@@ -34,7 +35,7 @@ function Dashboard() {
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/api/auth/me`, { withCredentials: true }) // ✅ Explicitly required
+      .get(`${API_URL}/api/auth/me`, { withCredentials: true }) // Drek goat
       .then((res) => setUser(res.data.user))
       .catch(() => setUser(null));
   }, []);
@@ -210,6 +211,7 @@ function Dashboard() {
           {activeTab === "Files" && activeProjectId && (
             <Files projectId={activeProjectId} />
           )}
+          {activeTab === "Settings" && <Settings />}
         </div>
       </div>
     </div>
