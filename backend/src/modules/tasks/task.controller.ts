@@ -24,7 +24,7 @@ export const createTask = async (req: Request, res: Response) => {
   res.status(201).json(task);
 };
 
-
+  
 export const updateTask = async (req: Request, res: Response) => {
     const taskId = req.params.id;
     const parsed = updateTaskSchema.safeParse(req.body);

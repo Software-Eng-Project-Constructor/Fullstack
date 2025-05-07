@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import OverviewPage from "./OverviewPage";
 import TasksPage from "./TasksPage";
+import MembersPage from "./MembersPage";
 import Calendar from "./Calendar";
 import Files from "./Files";
 import { FaTimes } from "react-icons/fa";
@@ -15,6 +16,7 @@ const API_URL = "http://localhost:5001";
 interface Project {
   id: number;
   name: string;
+  ownerId: string;
 }
 
 interface User {
@@ -28,14 +30,15 @@ function Dashboard() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Overview");
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [ownedProjects, setOwnedProjects] = useState<Project[]>([]);
+  const [memberProjects, setMemberProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
   const [newProjectName, setNewProjectName] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     axios
-      .get(`${API_URL}/api/auth/me`, { withCredentials: true }) // Drek goat
+      .get(`${API_URL}/api/auth/me`, { withCredentials: true })
       .then((res) => setUser(res.data.user))
       .catch(() => setUser(null));
   }, []);
@@ -48,15 +51,29 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
+    
+    // Fetch owned projects
     axios
-      .get(`${API_URL}/api/projects`, { withCredentials: true }) // ✅ Add credentials
+      .get(`${API_URL}/api/projects`, { withCredentials: true })
       .then((res) => {
-        setProjects(res.data);
-        if (res.data.length > 0) {
+        setOwnedProjects(res.data);
+        if (res.data.length > 0 && !activeProjectId) {
           setActiveProjectId(res.data[0].id);
         }
       });
-  }, [user]);
+
+    // Fetch all projects (including member projects)
+    axios
+      .get(`${API_URL}/api/projects/all`, { withCredentials: true })
+      .then((res) => {
+        const allProjects = res.data;
+        const memberProjects = allProjects.filter((project: Project) => project.ownerId !== user.id);
+        setMemberProjects(memberProjects);
+        if (allProjects.length > 0 && !activeProjectId) {
+          setActiveProjectId(allProjects[0].id);
+        }
+      });
+  }, [user, activeProjectId]);
 
   const handleAddProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -64,9 +81,9 @@ function Dashboard() {
     const res = await axios.post(
       `${API_URL}/api/projects`,
       { name: newProjectName },
-      { withCredentials: true } // ✅ Add credentials
+      { withCredentials: true }
     );
-    setProjects((prev) => [...prev, res.data]);
+    setOwnedProjects((prev) => [...prev, res.data]);
     setActiveProjectId(res.data.id);
     setNewProjectName("");
     setIsModalOpen(false);
@@ -74,9 +91,9 @@ function Dashboard() {
 
   const handleDeleteProject = async (projectId: number) => {
     await axios.delete(`${API_URL}/api/projects/${projectId}`, {
-      withCredentials: true, // ✅ Add credentials
+      withCredentials: true,
     });
-    setProjects((prev) => {
+    setOwnedProjects((prev) => {
       const updated = prev.filter((p) => p.id !== projectId);
       if (updated.length === 0) {
         setActiveProjectId(null);
@@ -89,7 +106,7 @@ function Dashboard() {
 
   const handleLogout = async () => {
     await axios.post(`${API_URL}/api/auth/logout`, null, {
-      withCredentials: true, // ✅ Add credentials
+      withCredentials: true,
     });
     setUser(null);
     navigate("/signin");
@@ -134,40 +151,61 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="bg-[#1C1D1D] p-4 flex flex-wrap gap-2">
-          {projects.map((project) => (
-            <div key={project.id} className="relative flex items-center">
-              <button
-                onClick={() => setActiveProjectId(project.id)}
-                className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
-                  project.id === activeProjectId
-                    ? "bg-orange-600 text-white"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                }`}
-              >
-                <span>{project.name}</span>
-              </button>
+        <div className="bg-[#1C1D1D] p-4">
+          <h3 className="text-white mb-2">Owned Projects</h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {ownedProjects.map((project) => (
+              <div key={project.id} className="relative flex items-center">
+                <button
+                  onClick={() => setActiveProjectId(project.id)}
+                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
+                    project.id === activeProjectId
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <span>{project.name}</span>
+                </button>
 
-              <span
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteProject(project.id);
-                }}
-                className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
-              >
-                <FaTimes />
-              </span>
-            </div>
-          ))}
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(project.id);
+                  }}
+                  className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
+                >
+                  <FaTimes />
+                </span>
+              </div>
+            ))}
 
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <span className="mr-2">+</span>
-          </button>
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <span className="mr-2">+</span>
+            </button>
+          </div>
+
+          <h3 className="text-white mb-2">Member Projects</h3>
+          <div className="flex flex-wrap gap-2">
+            {memberProjects.map((project) => (
+              <div key={project.id} className="relative flex items-center">
+                <button
+                  onClick={() => setActiveProjectId(project.id)}
+                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
+                    project.id === activeProjectId
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <span>{project.name}</span>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {isModalOpen && (
@@ -199,11 +237,14 @@ function Dashboard() {
             </div>
           </div>
         )}
-
+        
         <div className="tab-content flex-1 overflow-y-auto p-4 bg-gray-900 text-white">
           {activeTab === "Overview" && activeProjectId && (
             <OverviewPage projectId={activeProjectId} />
           )}
+          {activeTab === "Members" && activeProjectId && 
+            <MembersPage projectId={activeProjectId} user={user}/>
+          }
           {activeTab === "Tasks" && activeProjectId && (
             <TasksPage projectId={activeProjectId} user={user} />
           )}

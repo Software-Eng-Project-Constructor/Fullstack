@@ -15,11 +15,11 @@ model User {
   privilege String   @default("Viewer")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  description      String?
-  theme            String   @default("dark")
+
+  description       String?
+  theme             String  @default("dark")
   audioNotification Boolean @default(true)
-  profilePicPath   String?
+  profilePicPath    String?
 
   createdTasks  Task[] @relation("CreatedTasks")
   tasksAssigned Task[] @relation("AssignedTasks")
@@ -41,7 +41,6 @@ model Project {
   ownerId     String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
 
   owner       User         @relation("OwnerProjects", fields: [ownerId], references: [id])
   teamMembers TeamMember[]
@@ -84,8 +83,8 @@ model Task {
   title        String
   description  String?
   approved     Boolean?  @default(false)
-  status       Int?   @default(0)
-  priority     Int?   @default(0)
+  status       Int?      @default(0)
+  priority     Int?      @default(0)
   startDate    DateTime?
   dueDate      DateTime?
   projectId    Int
@@ -123,7 +122,6 @@ model TaskAssignment {
 
   @@id([taskId, userId])
 }
-
 
 model Comment {
   id        String   @id @default(uuid())
