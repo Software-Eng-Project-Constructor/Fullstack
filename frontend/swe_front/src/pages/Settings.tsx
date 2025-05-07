@@ -18,61 +18,42 @@ interface UserPayload {
 const Settings = () => {
   const errRef = useRef<HTMLParagraphElement>(null);
 
-  // Local states
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [description, setDescription] = useState("");
   const [accountName, setAccountName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [changePasswordMode, setChangePasswordMode] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [validNewPassword, setValidNewPassword] = useState(true);
+  const [validNewPassword, setValidNewPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [profilePicURL, setProfilePicURL] = useState<string>("");
 
   const [theme, setTheme] = useState("adaptive");
   const [audioNotification, setAudioNotification] = useState(true);
 
-  // Validation
   const [validEmail, setValidEmail] = useState(true);
-  const [validPassword, setValidPassword] = useState(true);
-
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 🔹 Fetch current user data on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        interface UserPayload {
-          id: string;
-          name: string;
-          email: string;
-          description?: string;
-          theme?: string;
-          audioNotification?: boolean;
-          profilePicPath?: string;
-        }
-
-        // 2) Tell axios to expect that shape on res.data:
         const res = await axios.get<UserPayload>(
-          "http://localhost:5001/api/users/me/full",
-          { withCredentials: true }
+          "http://localhost:5001/api/users/me/full"
         );
-
         const user = res.data;
         setAccountName(user.name || "");
         setEmail(user.email || "");
         setDescription(user.description || "");
         setTheme(user.theme || "adaptive");
         setAudioNotification(user.audioNotification ?? true);
-        setProfilePicURL(user.profilePicPath || ""); // <-- setting the profilePicURL here
+        setProfilePicURL(user.profilePicPath || "");
       } catch (err) {
         setErrorMsg("Failed to load user data.");
         errRef.current?.focus();
       }
     };
-
     fetchUser();
   }, []);
 
@@ -96,68 +77,49 @@ const Settings = () => {
     setErrorMsg("");
     setSuccessMsg("");
 
-    // 1. Validation
     if (
       !validEmail ||
       (changePasswordMode && (!oldPassword || !validNewPassword))
     ) {
-      setErrorMsg("Please enter a valid email and valid password.");
+      setErrorMsg("Please enter a valid email and password.");
       errRef.current?.focus();
       return;
     }
 
-    // 2. Convert image
     let profilePicBase64: string | null = null;
     if (profilePic) {
       profilePicBase64 = await fileToBase64(profilePic);
     }
 
     try {
-      // A) Update general settings
-      await axios.post(
-        "http://localhost:5001/api/users/update-settings",
-        {
-          name: accountName,
-          email,
-          description,
-          theme,
-          audioNotification, // matches controller
-        },
-        { withCredentials: true }
-      );
+      await axios.post("http://localhost:5001/api/users/update-settings", {
+        name: accountName,
+        email,
+        description,
+        theme,
+        audioNotification,
+      });
 
-      // B) Update password if in change mode
       if (changePasswordMode) {
-        await axios.post(
-          "http://localhost:5001/api/users/update-password",
-          { oldPassword, newPassword },
-          { withCredentials: true }
-        );
-        // reset password form
+        await axios.post("http://localhost:5001/api/users/update-password", {
+          oldPassword,
+          newPassword,
+        });
         setOldPassword("");
         setNewPassword("");
         setChangePasswordMode(false);
       }
 
-      // C) Update profile picture if provided
       if (profilePicBase64) {
-        await axios.post(
-          "http://localhost:5001/api/users/update-picture",
-          { base64Image: profilePicBase64 },
-          { withCredentials: true }
-        );
+        await axios.post("http://localhost:5001/api/users/update-picture", {
+          base64Image: profilePicBase64,
+        });
       }
 
       const res = await axios.get<UserPayload>(
-        "http://localhost:5001/api/users/me/full",
-        {
-          withCredentials: true,
-        }
+        "http://localhost:5001/api/users/me/full"
       );
-
-      // Update the profile picture URL based on response
       setProfilePicURL(res.data.profilePicPath || "");
-
       setSuccessMsg("Settings saved successfully!");
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.message || "Failed to save settings.");
@@ -176,31 +138,34 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-4 pl-12 w-full max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+    <div className="p-4 max-w-3xl mx-auto space-y-4 bg-[#0f172a] text-gray-200 rounded-xl">
+      <h1 className="text-3xl font-bold">Settings</h1>
 
-      {successMsg && <p className="text-green-500 text-sm">{successMsg}</p>}
+      {successMsg && (
+        <p className="text-green-400 bg-green-900/20 p-2 rounded text-sm">
+          {successMsg}
+        </p>
+      )}
+      <p ref={errRef} className="text-red-400 text-sm h-5">
+        {errorMsg}
+      </p>
 
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-gray-700 rounded-full overflow-hidden">
+      <div className="flex items-center gap-6">
+        <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700 shadow-inner">
           {profilePic ? (
-            // Display newly selected image using temporary URL
             <img
               src={URL.createObjectURL(profilePic)}
               alt="Profile"
               className="w-full h-full object-cover"
             />
           ) : profilePicURL ? (
-            // Display saved image
-            // Check if it's a Base64 string and format accordingly
             profilePicURL.startsWith("data:image/") ? (
               <img
-                src={profilePicURL} // Use the Base64 string directly as the src
+                src={profilePicURL}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
             ) : (
-              // Fallback or handle if it were ever a file path (less likely now)
               <img
                 src={`http://localhost:5001${profilePicURL}`}
                 alt="Profile"
@@ -208,132 +173,138 @@ const Settings = () => {
               />
             )
           ) : (
-            // Display placeholder if no image
-            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
               No Image
             </div>
           )}
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Profile Picture</label>
+          <label className="block font-medium mb-1">Upload New Picture</label>
           <input
             type="file"
             accept="image/*"
+            className="text-sm"
             onChange={(e) => setProfilePic(e.target.files?.[0] || null)}
           />
         </div>
       </div>
 
-      <div>
-        <label className="block font-medium mb-1">Description</label>
-        <textarea
-          className="w-full border rounded p-2"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
+      <div className="space-y-4">
+        <div>
+          <label className="block font-medium mb-1">Description</label>
+          <textarea
+            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
 
-      <div>
-        <label className="block font-medium mb-1">Account Name</label>
-        <input
-          className="w-full border rounded p-2"
-          value={accountName}
-          onChange={(e) => setAccountName(e.target.value)}
-        />
-      </div>
+        <div>
+          <label className="block font-medium mb-1">Account Name</label>
+          <input
+            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            value={accountName}
+            onChange={(e) => setAccountName(e.target.value)}
+          />
+        </div>
 
-      <div>
-        <label className="block font-medium mb-1">Email</label>
-        <input
-          className="w-full border rounded p-2"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <p className="text-red-500 text-xs">
-          {!validEmail && email ? "Invalid email address." : ""}
-        </p>
-      </div>
+        <div>
+          <label className="block font-medium mb-1">Email Address</label>
+          <input
+            type="email"
+            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <p className="text-red-400 text-xs mt-1">
+            {!validEmail && email ? "Enter a valid email address." : ""}
+          </p>
+        </div>
 
-      <div>
-        <label className="block font-medium mb-1 flex justify-between items-center">
-          <span>Password</span>
-          <button
-            type="button"
-            className="text-sm text-blue-600"
-            onClick={() => setChangePasswordMode((prev) => !prev)}
-          >
-            {changePasswordMode ? "Cancel" : "Change Password"}
-          </button>
-        </label>
+        <div className="border-t border-gray-700 pt-4">
+          <label className="block font-medium mb-1 flex justify-between items-center">
+            <span>Password</span>
+            <button
+              type="button"
+              className="text-sm text-blue-400 hover:underline"
+              onClick={() => setChangePasswordMode((prev) => !prev)}
+            >
+              {changePasswordMode ? "Cancel" : "Change Password"}
+            </button>
+          </label>
 
-        {changePasswordMode && (
-          // ✅ Password Change Form
-          <div className="space-y-3 mt-2">
-            {/* Old Password */}
-            <div>
+          {changePasswordMode && (
+            <div className="space-y-3 mt-2">
               <input
-                className="w-full border rounded p-2"
+                className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
                 type="password"
                 placeholder="Old Password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
               />
-            </div>
-
-            {/* New Password */}
-            <div>
-              <input
-                className="w-full border rounded p-2"
-                type="password"
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              {/* Password Requirements */}
-              <p className="text-red-500 text-xs">
+              <div className="relative">
+                <input
+                  className="w-full rounded bg-gray-800 border-gray-600 p-2 pr-20 focus:ring focus:ring-blue-500"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-3 text-sm text-gray-400 hover:text-white"
+                >
+                  {showNewPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <p className="text-red-400 text-xs mt-1">
                 {newPassword && !validNewPassword
-                  ? "8-24 chars, 1 upper, 1 lower, 1 number, 1 symbol"
+                  ? "Must be 8-24 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char."
                   : ""}
               </p>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div>
-        <label className="block font-medium mb-1">Theme</label>
-        <select
-          className="w-full border rounded p-2"
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
-        >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="adaptive">Adaptive</option>
-        </select>
-      </div>
+        <div>
+          <label className="block font-medium mb-1">Theme</label>
+          <select
+            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="adaptive">Adaptive</option>
+          </select>
+        </div>
 
-      <div className="flex items-center justify-between border p-3 rounded text-left">
-        <span>Enable Notification Sounds</span>
-        <input
-          type="checkbox"
-          checked={audioNotification}
-          onChange={() => setAudioNotification(!audioNotification)}
-          className="h-5 w-5 appearance-none border-2 border-gray-400 rounded bg-gray-800 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
-        />
+        <div className="flex items-center justify-between border rounded p-3 bg-gray-800 border-gray-600">
+          <span>Enable Notification Sounds</span>
+          <input
+            type="checkbox"
+            checked={audioNotification}
+            onChange={() => setAudioNotification(!audioNotification)}
+            className="h-5 w-5 rounded border-gray-500 text-blue-500 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       <div className="flex justify-between mt-6">
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className={`px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 focus:ring focus:ring-blue-500 ${
+            (!validEmail || (changePasswordMode && !validNewPassword)) &&
+            "opacity-50 cursor-not-allowed"
+          }`}
           onClick={handleSave}
+          disabled={!validEmail || (changePasswordMode && !validNewPassword)}
         >
-          Save Settings
+          Save Changes
         </button>
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          className="px-4 py-2 rounded-lg font-semibold bg-red-600 hover:bg-red-700 focus:ring focus:ring-red-500"
           onClick={handleDeleteAccount}
         >
           Delete Account
