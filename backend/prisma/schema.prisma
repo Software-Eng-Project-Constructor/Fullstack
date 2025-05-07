@@ -83,10 +83,9 @@ model Task {
   id           String    @id @default(uuid())
   title        String
   description  String?
-  assignedToId String?
   approved     Boolean?  @default(false)
-  status       String?   @default("Pending")
-  priority     String?   @default("Medium")
+  status       Int?   @default("0")
+  priority     Int?   @default("0")
   startDate    DateTime?
   dueDate      DateTime?
   projectId    Int
@@ -115,14 +114,6 @@ model TaskAssignment {
   @@id([taskId, userId])
 }
 
-model TaskStatus {
-  id         String @id @default(uuid())
-  name       String @unique
-  orderIndex Int    @default(0)
-  projectId  Int
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-}
 
 model Comment {
   id        String   @id @default(uuid())
