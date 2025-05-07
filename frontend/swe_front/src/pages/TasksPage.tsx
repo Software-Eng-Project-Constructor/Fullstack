@@ -18,6 +18,12 @@ interface User {
   email: string;
 }
 
+interface ProjectUser {
+  id: string;
+  role: string;
+  projectId: number;
+  user: User; // Nested user object
+}
 interface TasksPageProps {
   projectId: number;
   user: User | null;
@@ -63,11 +69,14 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
   // fetch project users
   const fetchProjectUsers = async () => {
     try {
-      const res = await axios.get<User[]>(
+      const res = await axios.get<ProjectUser[]>(
         `http://localhost:5001/api/Teams/${projectId}`
       );
-      console.log("AAAAAAAAAAAAAAAAAAAAAA")
-      setProjectUsers(res.data);
+      console.log("Fetched Project users", res.data);
+
+      // Extract the `user` object from each item in the response
+      const users = res.data.map((item) => item.user);
+      setProjectUsers(users); // Set the extracted users to the state
     } catch (err) {
       console.error("Error fetching project users:", err);
     }
@@ -97,8 +106,10 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
       ...newTask,
       createdById: user.id,
       projectId,
-      assignedTo: assignedTo,        // include this in your backend DTO
+      assignedTo: assignedTo, // Array of selected user IDs
     };
+
+    console.log("Payload sent to backend:", payload);
 
     try {
       const res = await axios.post<Task>(
@@ -108,13 +119,19 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
       const created = res.data;
       setTasks((prev) => [...prev, created]);
 
-      // assume backend returns assignments or refetch:
+      // Fetch assigned users for the created task
       const r2 = await axios.get<User[]>(
         `http://localhost:5001/api/tasks/${created.id}/users`
       );
-      setAssignedMap((m) => ({ ...m, [created.id]: r2.data }));
+      console.log("Assigned users fetched for task:", r2.data);
 
-      // reset modal
+      setAssignedMap((m) => {
+        const updatedMap = { ...m, [created.id]: r2.data };
+        console.log("Updated assignedMap:", updatedMap);
+        return updatedMap;
+      });
+
+      // Reset modal
       setShowTaskModal(false);
       setNewTask({ title: "", description: "" });
       setAssignedTo([]);
@@ -213,10 +230,7 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
 
       <ul className="space-y-4">
         {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="p-4 bg-[#1C1D1D] rounded shadow"
-          >
+          <li key={task.id} className="p-4 bg-[#1C1D1D] rounded shadow">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg text-orange-400">{task.title}</h3>

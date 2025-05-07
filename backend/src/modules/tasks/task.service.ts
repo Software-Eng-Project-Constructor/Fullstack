@@ -11,11 +11,12 @@ export const getTasksByProject = (projectId: number) => {
 };
 
 export const updateTask = (id: string, ownerId: string, dto: UpdateTaskDTO) => {
-    return prisma.task.updateMany({
-      where: { id, project: { ownerId } },
-      data: dto
-    });
-  };
+  return prisma.task.updateMany({
+    where: { id, project: { ownerId } },
+    data: dto
+  });
+};
+
   
 
 export const deleteTask = (taskId: string) => {

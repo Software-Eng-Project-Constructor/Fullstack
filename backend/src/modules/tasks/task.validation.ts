@@ -4,7 +4,7 @@ export const createTaskSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   approved: z.boolean().optional(),
-  priority: z.string().optional(),
+  priority: z.number().optional(),
   startDate: z.string().datetime().optional(),
   dueDate: z.string().datetime().optional(),
   milestoneId: z.string().optional(),
