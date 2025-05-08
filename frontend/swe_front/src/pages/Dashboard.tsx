@@ -140,7 +140,7 @@ function Dashboard() {
           </div>
           {user && (
             <div className="flex items-center gap-4 text-white">
-              <span className="text-sm">👋 {user.name}</span>
+              <span className="text-sm">Welcome, {user.name}!</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm"
