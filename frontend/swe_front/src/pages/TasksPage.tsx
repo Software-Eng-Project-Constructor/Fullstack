@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaTrash } from "react-icons/fa";
+import Swal from 'sweetalert2';
 
 axios.defaults.withCredentials = true;
 
@@ -135,22 +136,64 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
       setShowTaskModal(false);
       setNewTask({ title: "", description: "" });
       setAssignedTo([]);
+
+      // Show success notification
+      Swal.fire({
+        title: 'Success!',
+        text: 'Task has been created successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
     } catch (err) {
       console.error("Failed to create task:", err);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create task',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
     }
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    try {
-      await axios.delete(`http://localhost:5001/api/tasks/${taskId}`);
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
-      setAssignedMap((m) => {
-        const copy = { ...m };
-        delete copy[taskId];
-        return copy;
-      });
-    } catch (err) {
-      console.error("Failed to delete task:", err);
+    // Add confirmation dialog
+    const result = await Swal.fire({
+      title: 'Delete Task',
+      text: 'Are you sure you want to delete this task?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:5001/api/tasks/${taskId}`);
+        setTasks((prev) => prev.filter((t) => t.id !== taskId));
+        setAssignedMap((m) => {
+          const copy = { ...m };
+          delete copy[taskId];
+          return copy;
+        });
+
+        // Show success notification
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Task has been deleted.',
+          icon: 'success',
+          confirmButtonColor: '#f97316',
+        });
+      } catch (err) {
+        console.error("Failed to delete task:", err);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete task',
+          icon: 'error',
+          confirmButtonColor: '#f97316',
+        });
+      }
     }
   };
 

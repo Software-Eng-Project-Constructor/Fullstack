@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import axios from "axios";
+// import { useLocation } from "react-router-dom";
 
 interface User {
   id: string;
@@ -8,7 +9,6 @@ interface User {
   privilege: string;
 }
 
-// Create the context
 interface AuthContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,17 +17,16 @@ interface AuthContextType {
   checkSession: () => Promise<void>;
 }
 
-// Define the props for AuthProvider
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create a provider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  // const location = useLocation();
 
   const checkSession = async () => {
     try {
@@ -48,8 +47,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    checkSession();
-  }, []);
+    const authPages = ['/signin', '/signup', '/sign-in-manually', '/sign-up-manually'];
+    // Only check session if not on an auth page
+    if (!authPages.some(page => location.pathname.startsWith(page))) {
+      checkSession();
+    }
+  }, [location.pathname]);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, user, setUser, checkSession }}>
@@ -58,7 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-// Custom hook to use the AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

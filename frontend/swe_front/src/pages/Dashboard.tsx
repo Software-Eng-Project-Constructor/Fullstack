@@ -6,9 +6,11 @@ import TasksPage from "./TasksPage";
 import MembersPage from "./MembersPage";
 import Calendar from "./Calendar";
 import Files from "./Files";
+import Settings from "./Settings";
+import ProjectMilestones from "./Milstone";
 import { FaTimes } from "react-icons/fa";
-import Settings from "./Settings"
 import axios from "axios";
+import Swal from 'sweetalert2';
 
 axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:5001";
@@ -23,6 +25,8 @@ interface User {
   id: string;
   name: string;
   email: string;
+  privilege: string;
+  profilePicPath?: string;
 }
 
 function Dashboard() {
@@ -78,30 +82,81 @@ function Dashboard() {
   const handleAddProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    const res = await axios.post(
-      `${API_URL}/api/projects`,
-      { name: newProjectName },
-      { withCredentials: true }
-    );
-    setOwnedProjects((prev) => [...prev, res.data]);
-    setActiveProjectId(res.data.id);
-    setNewProjectName("");
-    setIsModalOpen(false);
+    
+    try {
+      const res = await axios.post(
+        `${API_URL}/api/projects`,
+        { name: newProjectName },
+        { withCredentials: true }
+      );
+      setOwnedProjects((prev) => [...prev, res.data]);
+      setActiveProjectId(res.data.id);
+      setNewProjectName("");
+      setIsModalOpen(false);
+
+      // Show success notification
+      Swal.fire({
+        title: 'Success!',
+        text: 'Project has been created successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
+    } catch (error) {
+      console.error("Error creating project:", error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to create project',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
+    }
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    await axios.delete(`${API_URL}/api/projects/${projectId}`, {
-      withCredentials: true,
+    // Add confirmation dialog
+    const result = await Swal.fire({
+      title: 'Delete Project',
+      text: 'Are you sure you want to delete this project? This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
     });
-    setOwnedProjects((prev) => {
-      const updated = prev.filter((p) => p.id !== projectId);
-      if (updated.length === 0) {
-        setActiveProjectId(null);
-      } else if (projectId === activeProjectId) {
-        setActiveProjectId(updated[0].id);
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`${API_URL}/api/projects/${projectId}`, {
+          withCredentials: true,
+        });
+        setOwnedProjects((prev) => {
+          const updated = prev.filter((p) => p.id !== projectId);
+          if (updated.length === 0) {
+            setActiveProjectId(null);
+          } else if (projectId === activeProjectId) {
+            setActiveProjectId(updated[0].id);
+          }
+          return updated;
+        });
+
+        // Show success notification
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Project has been deleted successfully',
+          icon: 'success',
+          confirmButtonColor: '#f97316',
+        });
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete project',
+          icon: 'error',
+          confirmButtonColor: '#f97316',
+        });
       }
-      return updated;
-    });
+    }
   };
 
   const handleLogout = async () => {
@@ -242,11 +297,14 @@ function Dashboard() {
           {activeTab === "Overview" && activeProjectId && (
             <OverviewPage projectId={activeProjectId} />
           )}
-          {activeTab === "Members" && activeProjectId && 
-            <MembersPage projectId={activeProjectId} user={user}/>
+          {activeTab === "Members" && activeProjectId && user && 
+            <MembersPage projectId={activeProjectId} user={user} />
           }
           {activeTab === "Tasks" && activeProjectId && (
             <TasksPage projectId={activeProjectId} user={user} />
+          )}
+          {activeTab === "Milestones" && activeProjectId && (
+            <ProjectMilestones projectId={activeProjectId.toString()} />
           )}
           {activeTab === "Calendar" && <Calendar />}
           {activeTab === "Files" && activeProjectId && (

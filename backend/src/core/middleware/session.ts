@@ -11,6 +11,6 @@ export const sessionMiddleware = session({
     secure: false,             // Must be false on HTTP (localhost)
     httpOnly: true,
     sameSite: "lax",           // Or "none" if using HTTPS and cross-site
-    maxAge: 1000 * 60 * 60 * 2 // 2 hours
+    maxAge: 1000 * 60 * 60 * 6 // 6 hours
   }
 });

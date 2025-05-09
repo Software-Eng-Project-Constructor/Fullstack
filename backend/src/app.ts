@@ -10,9 +10,9 @@ import teamRoutes from "./modules/team/team.routes"
 import cors from "cors";
 import eventsRouter from "./modules/event/event.routes"
 import userRoutes from "./modules/users/users.routes";
+import milestoneRoutes from "./modules/milestones/milestone.routes";
 
 const app = express();
-
 
 // ✅ FIRST: CORS must be before any cookies or sessions
 app.use(cors({
@@ -33,7 +33,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // ✅ Then: body parsing
 app.use(express.json({ limit: '10mb' }))
 
@@ -42,13 +41,11 @@ app.use("/api/auth", authRoutes);                    // open
 app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
 app.use("/api/teams", authGuard, teamRoutes);        // protected
-app.use("/events", eventsRouter);
+app.use("/api/milestones", authGuard, milestoneRoutes); // protected
+app.use("/api/events", eventsRouter);
 app.use("/api/users", authGuard, userRoutes); //Salamario code
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));
-
-
-
 
 export default app;

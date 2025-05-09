@@ -65,14 +65,13 @@ model TeamMember {
 
 model Milestone {
   id          String   @id @default(uuid())
-  projectId   Int
   title       String
   description String?
   dueDate     DateTime
-  status      String   @default("Upcoming")
+  status      String
+  projectId   Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   events  Event[]
   Task    Task[]

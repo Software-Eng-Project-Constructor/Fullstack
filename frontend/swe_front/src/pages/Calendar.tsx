@@ -10,6 +10,7 @@ import {
   isToday,
 } from "date-fns";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 interface EventData {
   id: string;
@@ -43,7 +44,7 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const res = await axios.get("http://localhost:5001/events");
+      const res = await axios.get("http://localhost:5001/api/events");
       setEvents(res.data);
     };
     fetchEvents();
@@ -81,28 +82,64 @@ const Calendar: React.FC = () => {
   };
 
   const handleAddEvent = async () => {
-    const newEvent: EventData = {
-      id: Date.now().toString(),
-      ...formData,
-    };
+    try {
+      const newEvent: EventData = {
+        id: Date.now().toString(),
+        ...formData,
+      };
 
-    await axios.post("http://localhost:5001/events", newEvent);
-    setEvents([...events, newEvent]);
-    setFormData({
-      title: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      priority: "low",
-      category: "work",
-    });
-    setShowModal(false);
+      await axios.post("http://localhost:5001/api/events", newEvent);
+      setEvents([...events, newEvent]);
+      setFormData({
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        priority: "low",
+        category: "work",
+      });
+      setShowModal(false);
+
+      // Show success notification
+      Swal.fire({
+        title: 'Success!',
+        text: 'Event has been added successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
+    } catch (error) {
+      console.error('Error adding event:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to add event',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
+    }
   };
 
   const handleDeleteEvent = async (id: string) => {
-    await axios.delete(`http://localhost:5001/events/${id}`);
-    setEvents(events.filter((e) => e.id !== id));
-    setViewEvent(null);
+    try {
+      await axios.delete(`http://localhost:5001/api/events/${id}`);
+      setEvents(events.filter((e) => e.id !== id));
+      setViewEvent(null);
+
+      // Show success notification
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'Event has been deleted successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete event',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
+    }
   };
 
   const changeMonth = (offset: number) => {

@@ -3,6 +3,27 @@ import { FaListCheck, FaCalendar, FaUsers, FaPlus } from 'react-icons/fa6';
 import axios from 'axios';
 import ProgressBar from '../components/progressbar';
 import Swal from 'sweetalert2';
+// import { useNavigate } from 'react-router-dom';
+
+axios.defaults.withCredentials = true;
+
+// Add axios interceptor to handle 401 errors globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      Swal.fire({
+        title: 'Session Expired',
+        text: 'Your session has expired. Please log in again.',
+        icon: 'warning',
+        confirmButtonColor: '#f97316',
+      }).then(() => {
+        window.location.href = '/signin';
+      });
+    }
+    return Promise.reject(error);
+  }
+);
 
 interface Task {
   id: number;
@@ -15,7 +36,7 @@ interface Task {
 
 interface Milestone {
   id: string;
-  projectId: string;
+  projectId: number;  // Changed from string to number to match database schema
   title: string;
   description: string;
   dueDate: string;
@@ -130,7 +151,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     try {
       const milestone = {
         ...newMilestone,
-        projectId,
+        projectId: parseInt(projectId), // Convert string projectId to number
         id: Date.now().toString(),
         dueDate: new Date(newMilestone.dueDate!).toISOString(),
         tasks: [],
@@ -178,10 +199,10 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
   const getContributors = async () => {
     try {
-      const response = await axios.get(`/api/team?projectId=${projectId}&role=contributor`);
+      const response = await axios.get(`/api/teams/${projectId}`);
       return response.data.map((member: any) => ({
-        name: member.name,
-        role: 'Contributor',
+        name: member.user.name,
+        role: member.role,
       }));
     } catch (error) {
       console.error('Error fetching contributors:', error);
@@ -200,13 +221,14 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         assignedTo: newTask.assignedTo || [],
         completed: false,
         status: 'Pending',
+        projectId: milestone.projectId // Include the milestone's projectId
       };
 
       const updatedTasks = [...(milestone.tasks || []), newTaskData];
 
       await axios.patch(`/api/milestones/${milestoneId}`, {
         ...milestone,
-        tasks: updatedTasks,
+        tasks: updatedTasks
       });
 
       setMilestones(prev =>
@@ -253,7 +275,9 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
     if (result.isConfirmed) {
       try {
+        // Delete associated events first
         await axios.delete(`/api/events?milestoneId=${id}`);
+        // Then delete the milestone
         await axios.delete(`/api/milestones/${id}`);
 
         setMilestones(prev => prev.filter(m => m.id !== id));

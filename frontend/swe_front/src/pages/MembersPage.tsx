@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import Swal from 'sweetalert2';
 
 axios.defaults.withCredentials = true;
 
@@ -24,7 +25,7 @@ interface MemberPageProps {
   user: User | null;
 }
 
-const MembersPage: React.FC<MemberPageProps> = ({ projectId, user }) => {
+const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
   const { checkSession } = useAuth();
   const [inputValue, setInputValue] = useState("");
   const [role, setRole] = useState("Member");
@@ -67,34 +68,92 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId, user }) => {
     };
 
     try {
-      // Check session before making the request
       await checkSession();
       
       const response = await axios.post("http://localhost:5001/api/teams/", payload);
       console.log("User added successfully:", response.data);
-      setSuccessMessage("Member added successfully!");
       setInputValue("");
       setRole("Member");
-      fetchMembers(); // Refresh the members list
+      fetchMembers();
+
+      // Show success notification
+      Swal.fire({
+        title: 'Success!',
+        text: 'Team member has been added successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
     } catch (error: any) {
       console.error("Error adding user:", error);
       if (error.response?.status === 401) {
-        // If unauthorized, try to refresh session and retry
         await checkSession();
         try {
-          const retryResponse = await axios.post("http://localhost:5001/api/teams/", payload);
-          setSuccessMessage("Member added successfully!");
+          await axios.post("http://localhost:5001/api/teams/", payload);
           setInputValue("");
           setRole("Member");
           fetchMembers();
+          
+          Swal.fire({
+            title: 'Success!',
+            text: 'Team member has been added successfully',
+            icon: 'success',
+            confirmButtonColor: '#f97316',
+          });
         } catch (retryError) {
-          setError("Failed to add member. Please try again.");
+          Swal.fire({
+            title: 'Error!',
+            text: 'Failed to add team member',
+            icon: 'error',
+            confirmButtonColor: '#f97316',
+          });
         }
       } else {
-        setError("Failed to add member. Please try again.");
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to add team member',
+          icon: 'error',
+          confirmButtonColor: '#f97316',
+        });
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    // Add confirmation dialog
+    const result = await Swal.fire({
+      title: 'Remove Team Member',
+      text: 'Are you sure you want to remove this team member?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, remove them!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`http://localhost:5001/api/teams/${memberId}`);
+        fetchMembers();
+        
+        // Show success notification
+        Swal.fire({
+          title: 'Removed!',
+          text: 'Team member has been removed successfully',
+          icon: 'success',
+          confirmButtonColor: '#f97316',
+        });
+      } catch (error) {
+        console.error("Error removing team member:", error);
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to remove team member',
+          icon: 'error',
+          confirmButtonColor: '#f97316',
+        });
+      }
     }
   };
 
@@ -200,15 +259,22 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId, user }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-300">{member.user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                        member.role === 'Member' ? 'bg-green-100 text-green-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {member.role}
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          member.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                          member.role === 'Member' ? 'bg-green-100 text-green-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {member.role}
+                        </span>
+                        <button
+                          onClick={() => handleRemoveMember(member.id)}
+                          className="text-red-500 hover:text-red-600 ml-4"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
                     </td>
-                    {/* <td className="px-6 py-4 whitespace-nowrap text-gray-300">{member.user.privilege}</td> */}
                   </tr>
                 ))}
               </tbody>
