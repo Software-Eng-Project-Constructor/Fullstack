@@ -29,6 +29,16 @@ interface User {
   profilePicPath?: string;
 }
 
+interface UserPayload {
+ id: string;
+ name: string;
+ email: string;
+ description?: string;
+ theme?: string;
+ audioNotification?: boolean;
+ profilePicPath?: string;
+}
+
 function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -52,6 +62,29 @@ function Dashboard() {
       navigate("/signin");
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    const fetchProfilePic = async () => {
+      try {
+        const res = await axios.get<UserPayload>(`${API_URL}/api/users/me/full`, {
+          withCredentials: true,
+        });
+        const fullUser = res.data;
+
+        setUser(currentUser => {
+          if (!currentUser) return null;
+          return {
+            ...currentUser,
+            profilePicPath: fullUser.profilePicPath || undefined,
+          };
+        });
+      } catch (err) {
+        console.error("Failed to fetch full user data for profile pic:", err);
+      }
+    };
+
+    fetchProfilePic();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -195,6 +228,25 @@ function Dashboard() {
           </div>
           {user && (
             <div className="flex items-center gap-4 text-white">
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
+                {user.profilePicPath ? (
+                  user.profilePicPath.startsWith('data:image/') ? (
+                    <img
+                      src={user.profilePicPath}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={`http://localhost:5001${user.profilePicPath}`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs" />
+                )}
+              </div>
               <span className="text-sm">Welcome, {user.name}!</span>
               <button
                 onClick={handleLogout}
