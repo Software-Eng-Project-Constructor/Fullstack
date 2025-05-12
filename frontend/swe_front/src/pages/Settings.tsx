@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { ThemeType, useTheme } from "../context/ThemeContext"; // Import ThemeContext
+
 axios.defaults.withCredentials = true;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,6 +19,7 @@ interface UserPayload {
 
 const Settings = () => {
   const errRef = useRef<HTMLParagraphElement>(null);
+  const { theme, setTheme } = useTheme(); // Use the theme context
 
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -29,13 +32,13 @@ const Settings = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [profilePicURL, setProfilePicURL] = useState<string>("");
 
-  const [theme, setTheme] = useState("adaptive");
   const [audioNotification, setAudioNotification] = useState(true);
 
   const [validEmail, setValidEmail] = useState(true);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Load user data
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -46,7 +49,10 @@ const Settings = () => {
         setAccountName(user.name || "");
         setEmail(user.email || "");
         setDescription(user.description || "");
-        setTheme(user.theme || "adaptive");
+        // Set theme from the context, not from the user data directly
+        if (user.theme) {
+          setTheme(user.theme as ThemeType);
+        }
         setAudioNotification(user.audioNotification ?? true);
         setProfilePicURL(user.profilePicPath || "");
       } catch (err) {
@@ -55,7 +61,7 @@ const Settings = () => {
       }
     };
     fetchUser();
-  }, []);
+  }, [setTheme]);
 
   useEffect(() => {
     setValidEmail(EMAIL_REGEX.test(email));
@@ -92,11 +98,12 @@ const Settings = () => {
     }
 
     try {
+      // Save settings to server
       await axios.post("http://localhost:5001/api/users/update-settings", {
         name: accountName,
         email,
         description,
-        theme,
+        theme, // Just pass the theme from the context
         audioNotification,
       });
 
@@ -137,8 +144,14 @@ const Settings = () => {
     }
   };
 
+  // Handle theme change from dropdown
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTheme = e.target.value as ThemeType;
+    setTheme(newTheme); // Use the context's setTheme
+  };
+
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-4 bg-[#0f172a] text-gray-200 rounded-xl">
+    <div className="p-4 max-w-3xl mx-auto space-y-4 rounded-xl" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}>
       <h1 className="text-3xl font-bold">Settings</h1>
 
       {successMsg && (
@@ -194,7 +207,8 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Description</label>
           <textarea
-            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
+            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -203,7 +217,8 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Account Name</label>
           <input
-            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
+            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
             value={accountName}
             onChange={(e) => setAccountName(e.target.value)}
           />
@@ -213,7 +228,8 @@ const Settings = () => {
           <label className="block font-medium mb-1">Email Address</label>
           <input
             type="email"
-            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
+            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -222,7 +238,7 @@ const Settings = () => {
           </p>
         </div>
 
-        <div className="border-t border-gray-700 pt-4">
+        <div className="border-t pt-4" style={{ borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}>
           <label className="block font-medium mb-1 flex justify-between items-center">
             <span>Password</span>
             <button
@@ -237,7 +253,8 @@ const Settings = () => {
           {changePasswordMode && (
             <div className="space-y-3 mt-2">
               <input
-                className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+                className="w-full rounded p-2 focus:ring focus:ring-blue-500"
+                style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
                 type="password"
                 placeholder="Old Password"
                 value={oldPassword}
@@ -245,7 +262,8 @@ const Settings = () => {
               />
               <div className="relative">
                 <input
-                  className="w-full rounded bg-gray-800 border-gray-600 p-2 pr-20 focus:ring focus:ring-blue-500"
+                  className="w-full rounded p-2 pr-20 focus:ring focus:ring-blue-500"
+                  style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
                   type={showNewPassword ? "text" : "password"}
                   placeholder="New Password"
                   value={newPassword}
@@ -254,7 +272,8 @@ const Settings = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-3 text-sm text-gray-400 hover:text-white"
+                  className="absolute inset-y-0 right-3 text-sm hover:text-blue-400"
+                  style={{ color: theme === 'light' ? '#64748b' : '#94a3b8' }}
                 >
                   {showNewPassword ? "Hide" : "Show"}
                 </button>
@@ -271,9 +290,10 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Theme</label>
           <select
-            className="w-full rounded bg-gray-800 border-gray-600 p-2 focus:ring focus:ring-blue-500"
+            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
+            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
             value={theme}
-            onChange={(e) => setTheme(e.target.value)}
+            onChange={handleThemeChange}
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -281,7 +301,11 @@ const Settings = () => {
           </select>
         </div>
 
-        <div className="flex items-center justify-between border rounded p-3 bg-gray-800 border-gray-600">
+        <div className="flex items-center justify-between rounded p-3 border" 
+          style={{ 
+            backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', 
+            borderColor: theme === 'light' ? '#cbd5e1' : '#475569' 
+          }}>
           <span>Enable Notification Sounds</span>
           <input
             type="checkbox"

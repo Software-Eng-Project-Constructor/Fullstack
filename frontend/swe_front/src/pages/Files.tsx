@@ -12,6 +12,7 @@ import {
   FaTrash,
   FaCloudUploadAlt
 } from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext"; // Import ThemeContext
 
 interface FileItem {
   id: number;
@@ -29,6 +30,78 @@ interface FileManagementProps {
 
 const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
   const [files, setFiles] = useState<FileItem[]>([/* Sample file data */]);
+  const { theme } = useTheme(); // Use theme context
+
+  // Define theme-specific styles
+  const getThemeStyles = () => {
+    if (theme === 'light') {
+      return {
+        // Main background and text colors
+        mainBg: 'bg-gray-100',
+        textColor: 'text-gray-800',
+        textMuted: 'text-gray-600',
+        
+        // Card and panel backgrounds
+        cardBg: 'bg-white',
+        filtersBg: 'bg-white',
+        
+        // Table styles
+        tableHeaderBg: 'bg-gray-50',
+        tableHeaderText: 'text-gray-700',
+        tableRowHover: 'hover:bg-orange-50',
+        tableBorder: 'border-gray-300',
+        
+        // Modal styles
+        modalBg: 'bg-white',
+        previewBg: 'bg-gray-200',
+        
+        // Input styles
+        inputBg: 'bg-white',
+        inputText: 'text-gray-800',
+        inputPlaceholder: 'placeholder-gray-500',
+        inputFocus: 'focus:ring-orange-500',
+        inputBorder: 'border-gray-300',
+        
+        // Button hover states
+        buttonHover: 'hover:text-orange-500',
+        buttonDelete: 'hover:text-red-500',
+      };
+    } else {
+      return {
+        // Main background and text colors
+        mainBg: 'bg-[#0F0F0F]',
+        textColor: 'text-gray-200',
+        textMuted: 'text-gray-300',
+        
+        // Card and panel backgrounds
+        cardBg: 'bg-[#1C1D1D]',
+        filtersBg: 'bg-[#1C1D1D]',
+        
+        // Table styles
+        tableHeaderBg: 'bg-[#1C1D1D]',
+        tableHeaderText: 'text-orange-400',
+        tableRowHover: 'hover:bg-orange-500/10',
+        tableBorder: 'border-gray-700',
+        
+        // Modal styles
+        modalBg: 'bg-[#1C1D1D]',
+        previewBg: 'bg-gray-700',
+        
+        // Input styles
+        inputBg: 'bg-[#1C1D1D]',
+        inputText: 'text-gray-100',
+        inputPlaceholder: 'placeholder-gray-500',
+        inputFocus: 'focus:ring-orange-500',
+        inputBorder: 'border-orange-500/20',
+        
+        // Button hover states
+        buttonHover: 'hover:text-orange-500',
+        buttonDelete: 'hover:text-red-500',
+      };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     // File upload logic as before
@@ -50,7 +123,7 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; file: FileItem | null }>({ isOpen: false, file: null });
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F] p-6 text-gray-200">
+    <div className={`min-h-screen ${styles.mainBg} p-6 ${styles.textColor}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-orange-500">File Management for Project {projectId}</h1>
@@ -64,26 +137,26 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
         </div>
 
         {/* Filters */}
-        <div className="bg-[#1C1D1D] p-6 rounded-lg mb-8">
+        <div className={`${styles.filtersBg} p-6 rounded-lg mb-8 border ${styles.inputBorder}`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
               <FaSearch className="absolute left-3 top-3 text-orange-500" />
               <input
                 type="text"
                 placeholder="Search files..."
-                className="w-full bg-[#1C1D1D] text-gray-100 pl-10 pr-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className={`w-full ${styles.inputBg} ${styles.inputText} pl-10 pr-4 py-2 rounded-md focus:outline-none ${styles.inputFocus}`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             <select
-              className="bg-[#1C1D1D] text-gray-100 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-orange-500/20"
+              className={`${styles.inputBg} ${styles.inputText} px-4 py-2 rounded-md focus:outline-none ${styles.inputFocus} border ${styles.inputBorder}`}
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
               {fileTypes.map((type) => (
-                <option key={type} value={type}>
+                <option key={type} value={type} className={theme === 'light' ? 'text-gray-800' : 'text-gray-200'}>
                   {type}
                 </option>
               ))}
@@ -92,44 +165,44 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
         </div>
 
         {/* File Table */}
-        <div className="bg-[#1C1D1D] rounded-lg overflow-hidden border border-orange-500/20">
+        <div className={`${styles.cardBg} rounded-lg overflow-hidden border ${styles.inputBorder}`}>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#1C1D1D]">
-                  <th className="px-6 py-4 text-left text-orange-400">File</th>
-                  <th className="px-6 py-4 text-left text-orange-400">Type</th>
-                  <th className="px-6 py-4 text-left text-orange-400">Size</th>
-                  <th className="px-6 py-4 text-left text-orange-400">Last Updated</th>
-                  <th className="px-6 py-4 text-left text-orange-400">Actions</th>
+                <tr className={styles.tableHeaderBg}>
+                  <th className={`px-6 py-4 text-left ${styles.tableHeaderText}`}>File</th>
+                  <th className={`px-6 py-4 text-left ${styles.tableHeaderText}`}>Type</th>
+                  <th className={`px-6 py-4 text-left ${styles.tableHeaderText}`}>Size</th>
+                  <th className={`px-6 py-4 text-left ${styles.tableHeaderText}`}>Last Updated</th>
+                  <th className={`px-6 py-4 text-left ${styles.tableHeaderText}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFiles.map((file) => (
-                  <tr key={file.id} className="border-b border-gray-700 hover:bg-orange-500/10 transition-colors cursor-pointer">
+                  <tr key={file.id} className={`border-b ${styles.tableBorder} ${styles.tableRowHover} transition-colors cursor-pointer`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <span className="text-2xl mr-3">{file.icon}</span>
-                        <span className="text-gray-100">{file.name}</span>
+                        <span className={styles.textColor}>{file.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-300">{file.type}</td>
-                    <td className="px-6 py-4 text-gray-300">{file.size}</td>
-                    <td className="px-6 py-4 text-gray-300">{new Date(file.lastUpdated).toLocaleDateString()}</td>
+                    <td className={`px-6 py-4 ${styles.textMuted}`}>{file.type}</td>
+                    <td className={`px-6 py-4 ${styles.textMuted}`}>{file.size}</td>
+                    <td className={`px-6 py-4 ${styles.textMuted}`}>{new Date(file.lastUpdated).toLocaleDateString()}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-3">
                         <button
                           onClick={() => setPreviewModal({ isOpen: true, file })}
-                          className="text-gray-300 hover:text-orange-500 transition-colors"
+                          className={`${styles.textMuted} ${styles.buttonHover} transition-colors`}
                         >
                           <FaEye size={18} />
                         </button>
-                        <button className="text-gray-300 hover:text-orange-500 transition-colors">
+                        <button className={`${styles.textMuted} ${styles.buttonHover} transition-colors`}>
                           <FaDownload size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(file.id)}
-                          className="text-gray-300 hover:text-red-500 transition-colors"
+                          className={`${styles.textMuted} ${styles.buttonDelete} transition-colors`}
                         >
                           <FaTrash size={18} />
                         </button>
@@ -145,7 +218,7 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
         {/* Preview Modal */}
         {previewModal.isOpen && previewModal.file && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-[#1C1D1D] rounded-lg p-6 max-w-4xl w-full border border-orange-500/20">
+            <div className={`${styles.modalBg} rounded-lg p-6 max-w-4xl w-full border ${styles.inputBorder}`}>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-orange-500">{previewModal.file.name}</h2>
                 <button
@@ -155,8 +228,8 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
                   ×
                 </button>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg mb-4 border border-orange-500/20">
-                <div className="text-center text-gray-300">
+              <div className={`${styles.previewBg} p-4 rounded-lg mb-4 border ${styles.inputBorder}`}>
+                <div className="text-center">
                   {previewModal.file.type.match(/^(PNG|JPG|JPEG|GIF)$/) ? (
                     <img src={previewModal.file.fileUrl} alt={previewModal.file.name} className="max-h-96 mx-auto" />
                   ) : previewModal.file.type === "PDF" ? (
@@ -172,7 +245,7 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
                   )}
                 </div>
               </div>
-              <div className="text-gray-300">
+              <div className={styles.textColor}>
                 <p>Type: <span className="text-orange-400">{previewModal.file.type}</span></p>
                 <p>Size: <span className="text-orange-400">{previewModal.file.size}</span></p>
                 <p>Last Updated: <span className="text-orange-400">{new Date(previewModal.file.lastUpdated).toLocaleString()}</span></p>

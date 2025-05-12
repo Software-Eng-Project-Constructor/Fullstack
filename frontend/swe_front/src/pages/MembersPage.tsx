@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaUserPlus, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext"; // Import ThemeContext
 import Swal from 'sweetalert2';
 
 axios.defaults.withCredentials = true;
@@ -27,6 +28,7 @@ interface MemberPageProps {
 
 const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
   const { checkSession } = useAuth();
+  const { theme } = useTheme(); // Use theme context
   const [inputValue, setInputValue] = useState("");
   const [role, setRole] = useState("Member");
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +36,75 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoadingMembers, setIsLoadingMembers] = useState(true);
+
+  // Define theme-specific styles
+  const getThemeStyles = () => {
+    if (theme === 'light') {
+      return {
+        // Main container
+        containerBg: 'bg-white',
+        containerShadow: 'shadow-md',
+        
+        // Headers and text
+        headerText: 'text-gray-800',
+        normalText: 'text-gray-600',
+        mutedText: 'text-gray-500',
+        
+        // Inputs and selects
+        inputBg: 'bg-gray-100',
+        inputText: 'text-gray-800',
+        inputBorder: 'border-gray-300',
+        inputFocus: 'focus:ring-blue-500',
+        
+        // Tables
+        tableBg: 'bg-white',
+        tableHeaderBg: 'bg-gray-200',
+        tableHeaderText: 'text-gray-700',
+        tableDivider: 'divide-gray-200',
+        tableHover: 'hover:bg-gray-100',
+        
+        // Alerts
+        errorBg: 'bg-red-100',
+        successBg: 'bg-green-100',
+        
+        // Avatar placeholder
+        avatarBg: 'bg-gray-300',
+      };
+    } else {
+      return {
+        // Main container
+        containerBg: 'bg-gray-900',
+        containerShadow: 'shadow-lg',
+        
+        // Headers and text
+        headerText: 'text-white',
+        normalText: 'text-white',
+        mutedText: 'text-gray-400',
+        
+        // Inputs and selects
+        inputBg: 'bg-gray-800',
+        inputText: 'text-white',
+        inputBorder: 'border-gray-700',
+        inputFocus: 'focus:ring-blue-500',
+        
+        // Tables
+        tableBg: 'bg-gray-800',
+        tableHeaderBg: 'bg-gray-700',
+        tableHeaderText: 'text-gray-300',
+        tableDivider: 'divide-gray-700',
+        tableHover: 'hover:bg-gray-700',
+        
+        // Alerts
+        errorBg: 'bg-red-100', // Keeping alert colors consistent for better visibility
+        successBg: 'bg-green-100',
+        
+        // Avatar placeholder
+        avatarBg: 'bg-gray-600',
+      };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   useEffect(() => {
     fetchMembers();
@@ -158,11 +229,11 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
   };
 
   return (
-    <div className="p-8 bg-gray-900 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-white mb-6">Project Members</h1>
+    <div className={`p-8 ${styles.containerBg} rounded-lg ${styles.containerShadow}`}>
+      <h1 className={`text-3xl font-bold ${styles.headerText} mb-6`}>Project Members</h1>
 
       <div className="mb-6">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
+        <label htmlFor="email" className={`block text-sm font-medium ${styles.mutedText} mb-2`}>
           Add new member
         </label>
         <div className="flex mb-2">
@@ -172,12 +243,12 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Enter member's email..."
-            className="flex-grow bg-gray-800 text-white px-4 py-2 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`flex-grow ${styles.inputBg} ${styles.inputText} px-4 py-2 rounded-l focus:outline-none focus:ring-2 ${styles.inputFocus}`}
           />
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="bg-gray-800 text-white px-4 py-2 border-l border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${styles.inputBg} ${styles.inputText} px-4 py-2 border-l ${styles.inputBorder} focus:outline-none focus:ring-2 ${styles.inputFocus}`}
           >
             <option value="Admin">Admin</option>
             <option value="Member">Member</option>
@@ -215,7 +286,7 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
       {/* Members List */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold text-white mb-4">Current Members</h2>
+        <h2 className={`text-xl font-semibold ${styles.headerText} mb-4`}>Current Members</h2>
         {isLoadingMembers ? (
           <div className="flex justify-center items-center h-32">
             <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24">
@@ -224,21 +295,20 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
             </svg>
           </div>
         ) : members.length === 0 ? (
-          <p className="text-gray-400">No members found in this project.</p>
+          <p className={styles.mutedText}>No members found in this project.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-gray-800 rounded-lg overflow-hidden">
-              <thead className="bg-gray-700">
+            <table className={`min-w-full ${styles.tableBg} rounded-lg overflow-hidden`}>
+              <thead className={styles.tableHeaderBg}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Role</th>
-                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Privilege</th> */}
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Name</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Email</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Role</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className={`${styles.tableDivider}`}>
                 {members.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-700">
+                  <tr key={member.id} className={styles.tableHover}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {member.user.profilePicPath ? (
@@ -248,16 +318,16 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
                             alt={member.user.name}
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-gray-600 mr-3 flex items-center justify-center">
+                          <div className={`h-8 w-8 rounded-full ${styles.avatarBg} mr-3 flex items-center justify-center`}>
                             <span className="text-white text-sm">
                               {member.user.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
-                        <span className="text-white">{member.user.name}</span>
+                        <span className={styles.normalText}>{member.user.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-300">{member.user.email}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap ${styles.mutedText}`}>{member.user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center justify-between">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

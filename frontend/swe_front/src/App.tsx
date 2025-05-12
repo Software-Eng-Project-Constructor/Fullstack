@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ApiTester from './components/apitester';
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext"; // Import ThemeProvider
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -42,19 +43,21 @@ axios.interceptors.response.use(
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tester" element={<ApiTester />} />
-          <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="signin" element={<SignInOptions />} />
-          <Route path="signup" element={<SignUpOptions />} />
-          <Route path="sign-up-manually" element={<SignUpManually />} />
-          <Route path="sign-in-manually" element={<SignInManually />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/signin" element={<SignInOptions />} />
+            <Route path="/signup" element={<SignUpOptions />} />
+            <Route path="/signupmanually" element={<SignUpManually />} />
+            <Route path="/signinmanually" element={<SignInManually />} />
+            <Route path="/dashboard/*" element={<Dashboard />} />
+            <Route path="/api-tester" element={<ApiTester />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

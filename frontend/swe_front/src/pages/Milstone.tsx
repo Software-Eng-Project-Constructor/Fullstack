@@ -3,7 +3,7 @@ import { FaListCheck, FaCalendar, FaUsers, FaPlus } from 'react-icons/fa6';
 import axios from 'axios';
 import ProgressBar from '../components/progressbar';
 import Swal from 'sweetalert2';
-// import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext'; // Import ThemeContext
 
 axios.defaults.withCredentials = true;
 
@@ -49,6 +49,7 @@ interface ProjectMilestonesProps {
 }
 
 const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
+  const { theme } = useTheme(); // Use theme context
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -68,6 +69,81 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     status: 'Pending',
   });
   const [contributors, setContributors] = useState<any[]>([]);
+
+  // Define theme-specific styles
+  const getThemeStyles = () => {
+    if (theme === 'light') {
+      return {
+        // Main container
+        mainBg: 'bg-white',
+        containerShadow: 'shadow-md',
+        headerText: 'text-gray-800',
+        subheaderText: 'text-gray-600',
+        normalText: 'text-gray-700',
+        mutedText: 'text-gray-500',
+        
+        // Card styles
+        cardBg: 'bg-gray-50',
+        cardInnerBg: 'bg-white',
+        cardInnerBgAlt: 'bg-gray-100',
+        cardShadow: 'shadow-sm',
+        cardBorder: 'border border-gray-200',
+        
+        // Form elements
+        inputBg: 'bg-white',
+        inputBorder: 'border-gray-300',
+        inputText: 'text-gray-800',
+        
+        // Buttons
+        buttonSecondary: 'bg-gray-300 hover:bg-gray-400',
+        buttonSecondaryText: 'text-gray-800',
+        
+        // Task checkboxes
+        checkboxBg: 'bg-white',
+        checkboxBorder: 'border-gray-400',
+        
+        // Modal
+        modalBg: 'bg-white',
+        modalOverlay: 'bg-black bg-opacity-50',
+      };
+    } else {
+      return {
+        // Main container
+        mainBg: 'bg-[#0F0F0F]',
+        containerShadow: 'shadow-lg',
+        headerText: 'text-orange-500',
+        subheaderText: 'text-gray-400',
+        normalText: 'text-gray-200',
+        mutedText: 'text-gray-400',
+        
+        // Card styles
+        cardBg: 'bg-[#1C1D1D]',
+        cardInnerBg: 'bg-[#0F0F0F]',
+        cardInnerBgAlt: 'bg-[#1C1D1D]',
+        cardShadow: 'shadow-md',
+        cardBorder: 'border border-gray-800',
+        
+        // Form elements
+        inputBg: 'bg-[#0F0F0F]',
+        inputBorder: 'border-gray-700',
+        inputText: 'text-white',
+        
+        // Buttons
+        buttonSecondary: 'bg-gray-600 hover:bg-gray-700',
+        buttonSecondaryText: 'text-white',
+        
+        // Task checkboxes
+        checkboxBg: 'bg-gray-800',
+        checkboxBorder: 'border-gray-600',
+        
+        // Modal
+        modalBg: 'bg-[#1C1D1D]',
+        modalOverlay: 'bg-black bg-opacity-50',
+      };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   useEffect(() => {
     const fetchContributors = async () => {
@@ -329,12 +405,12 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
   const overallProgress = calculateOverallProgress();
 
   return (
-    <div className="max-w-6xl mx-auto p-8 bg-[#0F0F0F] rounded-lg shadow-lg text-gray-200">
+    <div className={`max-w-6xl mx-auto p-8 ${styles.mainBg} rounded-lg ${styles.containerShadow} ${styles.normalText}`}>
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-orange-500">Project Milestones</h1>
-            <p className="text-gray-400">Project ID: {projectId}</p>
+            <h1 className={`text-3xl font-bold ${styles.headerText}`}>Project Milestones</h1>
+            <p className={styles.subheaderText}>Project ID: {projectId}</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -344,10 +420,10 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
           </button>
         </div>
 
-        <div className="bg-[#1C1D1D] p-4 rounded-lg mb-6">
+        <div className={`${styles.cardBg} p-4 rounded-lg mb-6 ${styles.cardShadow}`}>
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-semibold text-orange-500">Overall Progress</h2>
-            <span className="text-gray-400">{overallProgress}%</span>
+            <h2 className={`text-lg font-semibold ${styles.headerText}`}>Overall Progress</h2>
+            <span className={styles.mutedText}>{overallProgress}%</span>
           </div>
           <ProgressBar progress={overallProgress} />
         </div>
@@ -355,20 +431,20 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
       <div className="space-y-6">
         {milestones.map(milestone => (
-          <div key={milestone.id} className="bg-[#1C1D1D] p-6 rounded-lg shadow-md">
+          <div key={milestone.id} className={`${styles.cardBg} p-6 rounded-lg ${styles.cardShadow}`}>
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-orange-500">{milestone.title}</h2>
-                <p className="text-gray-400 mt-2">{milestone.description}</p>
-                <div className="flex items-center mt-2 text-sm text-gray-500">
+                <h2 className={`text-xl font-bold ${styles.headerText}`}>{milestone.title}</h2>
+                <p className={styles.mutedText + " mt-2"}>{milestone.description}</p>
+                <div className={`flex items-center mt-2 text-sm ${styles.mutedText}`}>
                   <FaCalendar className="mr-2" />
                   Due: {new Date(milestone.dueDate).toLocaleDateString()}
                 </div>
 
                 <div className="mt-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-400">Progress</span>
-                    <span className="text-sm text-gray-400">
+                    <span className={`text-sm ${styles.mutedText}`}>Progress</span>
+                    <span className={`text-sm ${styles.mutedText}`}>
                       {calculateMilestoneProgress(milestone.tasks)}%
                     </span>
                   </div>
@@ -398,7 +474,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
             <div className="mt-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold flex items-center">
+                <h3 className={`text-lg font-semibold flex items-center ${styles.normalText}`}>
                   <FaListCheck className="mr-2 text-orange-500" />
                   Tasks ({milestone.tasks?.length || 0})
                 </h3>
@@ -413,24 +489,24 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
               {milestone.tasks && milestone.tasks.length > 0 && (
                 <div className="space-y-3">
                   {milestone.tasks.map(task => (
-                    <div key={task.id} className="bg-[#0F0F0F] p-4 rounded-lg">
+                    <div key={task.id} className={`${styles.cardInnerBg} p-4 rounded-lg ${styles.cardBorder}`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <input
                             type="checkbox"
                             checked={task.completed}
                             onChange={() => handleToggleTask(milestone.id, task.id)}
-                            className="w-4 h-4 text-orange-500 bg-gray-800 rounded border-gray-600 focus:ring-orange-500"
+                            className={`w-4 h-4 text-orange-500 ${styles.checkboxBg} rounded ${styles.checkboxBorder} focus:ring-orange-500`}
                           />
                           <span
                             className={`ml-3 ${
-                              task.completed ? 'line-through text-gray-400' : 'text-gray-200'
+                              task.completed ? 'line-through ' + styles.mutedText : styles.normalText
                             }`}
                           >
                             {task.title}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className={`text-sm ${styles.mutedText}`}>
                           {task.assignedTo && task.assignedTo.length > 0 ? (
                             <div className="flex items-center">
                               <FaUsers className="mr-2" />
@@ -450,29 +526,29 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         ))}
 
         {milestones.length === 0 && (
-          <div className="text-center text-gray-400 py-8">
+          <div className={`text-center ${styles.mutedText} py-8`}>
             No milestones found for this project
           </div>
         )}
       </div>
 
       {showTaskModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#1C1D1D] p-6 rounded-lg w-96">
-            <h3 className="text-xl font-bold text-orange-500 mb-4">Add New Task to Milestone</h3>
+        <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
+          <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
+            <h3 className={`text-xl font-bold ${styles.headerText} mb-4`}>Add New Task to Milestone</h3>
             <input
               type="text"
               placeholder="Task Name"
               required
               value={newTask.title}
               onChange={e => setNewTask(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
             />
             <textarea
               placeholder="Description"
               value={newTask.description}
               onChange={e => setNewTask(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
               rows={3}
             />
             <select
@@ -483,7 +559,8 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                   assignedTo: Array.from(e.target.selectedOptions).map(option => option.value),
                 }))
               }
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
             >
               <option value="">Select Assignee (optional)</option>
               {contributors.map((c: { name: string; role: string }) => (
@@ -492,11 +569,11 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                 </option>
               ))}
             </select>
-            <p className="text-sm text-gray-400 mb-4">Task will inherit milestone's deadline</p>
+            <p className={`text-sm ${styles.mutedText} mb-4`}>Task will inherit milestone's deadline</p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowTaskModal(null)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className={`px-4 py-2 ${styles.buttonSecondary} ${styles.buttonSecondaryText} rounded`}
               >
                 Cancel
               </button>
@@ -512,27 +589,28 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#1C1D1D] p-6 rounded-lg w-96">
-            <h3 className="text-xl font-bold text-orange-500 mb-4">Add New Milestone</h3>
+        <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
+          <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
+            <h3 className={`text-xl font-bold ${styles.headerText} mb-4`}>Add New Milestone</h3>
             <input
               type="text"
               placeholder="Title"
               value={newMilestone.title}
               onChange={e => setNewMilestone(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
             />
             <textarea
               placeholder="Description"
               value={newMilestone.description}
               onChange={e => setNewMilestone(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
             />
             <input
               type="date"
               value={newMilestone.dueDate}
               onChange={e => setNewMilestone(prev => ({ ...prev, dueDate: e.target.value }))}
-              className="w-full mb-3 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
             />
             <select
               value={newMilestone.status}
@@ -542,7 +620,8 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                   status: e.target.value as Milestone['status'],
                 }))
               }
-              className="w-full mb-4 p-2 bg-[#0F0F0F] border border-gray-700 rounded text-white"
+              className={`w-full mb-4 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
             >
               <option value="Not Started">Not Started</option>
               <option value="In Progress">In Progress</option>
@@ -551,7 +630,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                className={`px-4 py-2 ${styles.buttonSecondary} ${styles.buttonSecondaryText} rounded`}
               >
                 Cancel
               </button>
