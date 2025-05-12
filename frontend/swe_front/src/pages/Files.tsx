@@ -28,6 +28,40 @@ interface FileManagementProps {
   projectId: number; // The prop to receive projectId
 }
 
+
+function getFileType(name: string): string {
+  const ext = name.split('.').pop()?.toUpperCase();
+  if (!ext) return 'UNKNOWN';
+  return ext;
+}
+
+function getFileIcon(name: string): JSX.Element {
+  const ext = name.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+      return <FaFileImage />;
+    case 'pdf':
+      return <FaFilePdf />;
+    case 'doc':
+    case 'docx':
+      return <FaFileWord />;
+    case 'ppt':
+    case 'pptx':
+      return <FaFilePowerpoint />;
+    case 'xls':
+    case 'xlsx':
+      return <FaFileExcel />;
+    case 'txt':
+      return <FaFileAlt />;
+    default:
+      return <FaFileAlt />;
+  }
+}
+
+
 const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
   const [files, setFiles] = useState<FileItem[]>([/* Sample file data */]);
   const { theme } = useTheme(); // Use theme context
@@ -104,7 +138,24 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
   const styles = getThemeStyles();
 
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    // File upload logic as before
+    const newFiles = Array.from(event.target.files!).map((file, index) => {
+      const fileType = getFileType(file.name);
+      const fileIcon = getFileIcon(file.name);
+      //temporary URL instead of server for files for the DEMO
+     
+      const fileUrl = URL.createObjectURL(file);
+
+      return {
+        id: files.length + index + 1, // Simple ID for demo
+        name: file.name,
+        type: fileType,
+        size: (file.size / 1024).toFixed(2) + " KB", // Simplified size
+        lastUpdated: new Date().toISOString(), // Now
+        icon: fileIcon,
+        fileUrl: fileUrl,
+      };
+    });
+    setFiles([...files, ...newFiles]);
   };
 
   const [searchTerm, setSearchTerm] = useState<string>("");
