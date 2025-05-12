@@ -42,7 +42,7 @@ app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
 app.use("/api/teams", authGuard, teamRoutes);        // protected
 app.use("/api/milestones", authGuard, milestoneRoutes); // protected
-app.use("/api/events", eventsRouter);
+app.use("/api/events", authGuard, eventsRouter);
 app.use("/api/users", authGuard, userRoutes); //Salamario code
 
 // ✅ 6. Health check
