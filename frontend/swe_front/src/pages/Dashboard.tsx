@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import OverviewPage from "./OverviewPage";
+import OverviewPage, { OverviewPageProps } from "./OverviewPage"; 
 import TasksPage from "./TasksPage";
 import MembersPage from "./MembersPage";
 import Calendar from "./Calendar";
@@ -393,7 +393,7 @@ function Dashboard() {
         
         <div className={`tab-content flex-1 overflow-y-auto p-4 ${themeClasses.tabContentBg} ${themeClasses.textColor}`}>
           {activeTab === "Overview" && activeProjectId && (
-            <OverviewPage projectId={activeProjectId} />
+            <OverviewPage projectId={activeProjectId} onTabChange={setActiveTab} />
           )}
           {activeTab === "Members" && activeProjectId && user && 
             <MembersPage projectId={activeProjectId} user={user} />
