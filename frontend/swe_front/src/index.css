@@ -2,14 +2,40 @@
 @import "tailwindcss";
 
 :root {
+  /* Default theme (dark) */
+  --bg-color: #08090a;
+  --text-color: #e4e4e7;
+  --primary-color: #3b82f6;
+  --sidebar-bg: #0B0C0D;
+  --input-bg: #1e293b;
+  --border-color: #475569;
+}
+
+.theme-light {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --primary-color: #3b82f6;
+  --sidebar-bg: #f1f5f9;
+  --input-bg: #f1f5f9;
+  --border-color: #cbd5e1;
+}
+
+.theme-dark {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --primary-color: #3b82f6;
+  --sidebar-bg: #0B0C0D;
+  --input-bg: #1e293b;
+  --border-color: #475569;
+}
+
+:root {
   /* Fonts */
   --font-sans: "Inter", sans-serif;
-
   /* Colors */
-  --text-primary: #e4e4e7; /* Soft white */
+  --text-primary: var(--text-color); /* Using theme variables */
   --text-muted: #a1a1aa; /* Muted gray */
-  --bg-dark: #08090a; /* Dark background */
-
+  --bg-dark: var(--bg-color); /* Using theme variables */
   /* 8-Point Grid Spacing */
   --space-0: 0px;
   --space-1: 8px;
@@ -18,7 +44,6 @@
   --space-4: 32px;
   --space-5: 40px;
   --space-6: 48px;
-
   /* Typography Sizes */
   --text-xs: 12px;
   --text-sm: 14px;
@@ -37,8 +62,14 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: 1.6;
-  color: var(--text-primary);
-  background-color: var(--bg-dark);
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply theme transitions to common elements */
+button, input, select, textarea, a {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Utility Classes */
@@ -54,4 +85,43 @@ body {
 /* Add padding only to sections that need it */
 .page-content {
   padding: var(--space-4);
+}
+
+/* Theme-specific styles for common components */
+.card {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Form elements with theme support */
+input, select, textarea {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Table styles with theme support */
+table {
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+/* Ensure dark scrollbars in dark mode */
+@media (prefers-color-scheme: dark) {
+  :root.theme-dark, :root.theme-adaptive {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root.theme-light, :root.theme-adaptive {
+    color-scheme: light;
+  }
 }

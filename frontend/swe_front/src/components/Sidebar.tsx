@@ -1,4 +1,6 @@
 import { FaBars } from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext"; // Import ThemeContext
+import { Link } from "react-router-dom";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -8,41 +10,61 @@ interface SidebarProps {
 }
 
 function Sidebar({ isOpen, activeTab, onTabChange, toggleSidebar }: SidebarProps) {
+  const { theme } = useTheme(); // Use theme context
+
+  // Get theme-specific classes
+  const getSidebarBgClass = () => {
+    if (theme === 'light') {
+      return 'bg-gray-100';
+    } else {
+      return 'bg-[#0B0C0D]'; // Dark sidebar
+    }
+  };
+
+  const getTextClass = () => {
+    return theme === 'light' ? 'text-gray-800' : 'text-gray-300';
+  };
+
+  const getHoverClass = () => {
+    return theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-[#1C1D1D]';
+  };
+
   return (
-    <>
-      {/* Static Burger Icon */}
+    <div
+      className={`${getSidebarBgClass()} h-screen fixed left-0 transition-all duration-300 ${
+        isOpen ? "w-64" : "w-16"
+      } py-4 flex flex-col`}
+      style={{ zIndex: 10 }}
+    >
+      {/* Burger Icon */}
       <button
         onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 text-white bg-gray-900 p-2 rounded-md shadow-md hover:bg-gray-800"
+        className={`p-4 hover:bg-[#1C1D1D] rounded-md m-2 ${getTextClass()}`}
       >
         <FaBars size={20} />
       </button>
 
-      {/* Sidebar Panel */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[#0F0F0F] p-4 transition-transform duration-300 z-40 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <nav className="mt-16 space-y-2">
-          {["Overview", "Tasks", "Milestones", "Members", "Calendar", "Files","Settings"].map((tab) => (
-            <button
+      {/* Navigation Links */}
+      <div className="mt-8 flex-1">
+        {["Overview", "Tasks", "Milestones", "Members", "Calendar", "Files", "Settings"].map(
+          (tab) => (
+            <Link
               key={tab}
+              to={tab === "Overview" ? "/dashboard" : `/dashboard/${tab.toLowerCase()}`}
               onClick={() => onTabChange(tab)}
               className={`block w-full text-left px-4 py-2 rounded-md ${
                 activeTab === tab
                   ? "bg-orange-600 text-white"
-                  : "text-gray-300 hover:bg-[#1C1D1D]"
-              }`}
+                  : `${getTextClass()} ${getHoverClass()}`
+              } ${!isOpen ? "text-center" : ""}`}
             >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </aside>
-    </>
+              {isOpen ? tab : tab.charAt(0)}
+            </Link>
+          )
+        )}
+      </div>
+    </div>
   );
 }
 
 export default Sidebar;
-

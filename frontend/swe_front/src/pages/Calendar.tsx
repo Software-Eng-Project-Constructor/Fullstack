@@ -11,6 +11,7 @@ import {
 } from "date-fns";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useTheme } from "../context/ThemeContext"; // Import ThemeContext
 
 interface EventData {
   id: string;
@@ -25,6 +26,7 @@ interface EventData {
 const Calendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<EventData[]>([]);
+  const { theme } = useTheme(); // Use theme context
 
   const [viewEvent, setViewEvent] = useState<EventData | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -36,6 +38,57 @@ const Calendar: React.FC = () => {
     priority: "low",
     category: "work",
   });
+
+  // Define theme-specific styles
+  const getThemeStyles = () => {
+    if (theme === 'light') {
+      return {
+        // Main background and text
+        mainBg: 'bg-gray-100',
+        textColor: 'text-gray-800',
+        textMuted: 'text-gray-500',
+        
+        // Calendar cells
+        cellBg: 'bg-white',
+        cellBgOtherMonth: 'bg-gray-200 opacity-70',
+        cellBorder: 'border-gray-300',
+        
+        // Modal styles
+        modalBg: 'bg-white',
+        inputBg: 'bg-gray-50',
+        inputBorder: 'border-gray-300',
+        inputText: 'text-gray-800',
+        
+        // Buttons and accents
+        buttonSecondary: 'bg-gray-300 hover:bg-gray-400',
+        buttonSecondaryText: 'text-gray-800',
+      };
+    } else {
+      return {
+        // Main background and text
+        mainBg: 'bg-[#0F0F0F]',
+        textColor: 'text-gray-200',
+        textMuted: 'text-gray-400',
+        
+        // Calendar cells
+        cellBg: 'bg-[#1C1D1D]',
+        cellBgOtherMonth: 'bg-gray-800 opacity-50',
+        cellBorder: 'border-gray-700',
+        
+        // Modal styles
+        modalBg: 'bg-[#1C1D1D]',
+        inputBg: 'bg-[#0F0F0F]',
+        inputBorder: 'border-gray-700',
+        inputText: 'text-white',
+        
+        // Buttons and accents
+        buttonSecondary: 'bg-gray-600 hover:bg-gray-700',
+        buttonSecondaryText: 'text-white',
+      };
+    }
+  };
+
+  const styles = getThemeStyles();
 
   const daysInMonth = eachDayOfInterval({
     start: startOfWeek(startOfMonth(currentMonth)),
@@ -149,7 +202,7 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-[#0F0F0F] text-gray-200 min-h-screen">
+    <div className={`p-6 ${styles.mainBg} ${styles.textColor} min-h-screen`}>
       <div className="flex justify-between items-center mb-4">
         <button
           className="text-orange-500 hover:text-orange-600"
@@ -168,9 +221,9 @@ const Calendar: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-center text-gray-400 mb-2">
+      <div className="grid grid-cols-7 gap-2 text-center mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="font-semibold">
+          <div key={d} className={`font-semibold ${styles.textMuted}`}>
             {d}
           </div>
         ))}
@@ -187,9 +240,9 @@ const Calendar: React.FC = () => {
             <div
               key={formatted}
               onClick={() => handleDayClick(day)}
-              className={`p-2 rounded-md border text-white cursor-pointer transition-all
-                ${isSameMonth(day, currentMonth) ? "bg-[#1C1D1D]" : "bg-gray-800 opacity-50"}
-                ${isToday(day) ? "border-orange-500" : "border-gray-700"}
+              className={`p-2 rounded-md border cursor-pointer transition-all
+                ${isSameMonth(day, currentMonth) ? styles.cellBg : styles.cellBgOtherMonth}
+                ${isToday(day) ? "border-orange-500" : styles.cellBorder}
                 hover:bg-orange-500 hover:text-white`}
             >
               <div>{format(day, "d")}</div>
@@ -206,11 +259,11 @@ const Calendar: React.FC = () => {
       {/* View or Add Event Modal */}
       {(viewEvent || showModal) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#1C1D1D] text-white p-6 rounded-lg w-96 shadow-lg">
+          <div className={`${styles.modalBg} ${styles.textColor} p-6 rounded-lg w-96 shadow-lg`}>
             {viewEvent ? (
               <>
                 <h3 className="text-xl font-bold mb-2">{viewEvent.title}</h3>
-                <p className="text-sm text-gray-400">{viewEvent.description}</p>
+                <p className={`text-sm ${styles.textMuted}`}>{viewEvent.description}</p>
                 <p className="text-sm mt-2">
                   <strong>Start:</strong> {viewEvent.startDate}
                 </p>
@@ -225,13 +278,13 @@ const Calendar: React.FC = () => {
                 </p>
                 <div className="flex justify-between">
                   <button
-                    className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded"
+                    className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded text-white"
                     onClick={() => handleDeleteEvent(viewEvent.id)}
                   >
                     Delete
                   </button>
                   <button
-                    className="bg-gray-600 hover:bg-gray-700 px-4 py-1 rounded"
+                    className={`${styles.buttonSecondary} px-4 py-1 rounded ${styles.buttonSecondaryText}`}
                     onClick={() => setViewEvent(null)}
                   >
                     Close
@@ -246,38 +299,39 @@ const Calendar: React.FC = () => {
                   placeholder="Title"
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white border border-gray-700 appearance-none"
-                  style={{ colorScheme: "dark" }}
+                  className={`w-full mb-2 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder} appearance-none`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 />
                 <textarea
                   name="description"
                   placeholder="Description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white border border-gray-700 appearance-none"
-                  style={{ colorScheme: "dark" }}
+                  className={`w-full mb-2 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder} appearance-none`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 />
                 <input
                   name="startDate"
                   type="date"
                   value={formData.startDate}
                   onChange={handleChange}
-                  className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white border border-gray-700 appearance-none"
-                  style={{ colorScheme: "dark" }}
+                  className={`w-full mb-2 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder} appearance-none`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 />
                 <input
                   name="endDate"
                   type="date"
                   value={formData.endDate}
                   onChange={handleChange}
-                  className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white border border-gray-700 appearance-none"
-                  style={{ colorScheme: "dark" }}
+                  className={`w-full mb-2 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder} appearance-none`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 />
                 <select
                   name="priority"
                   value={formData.priority}
                   onChange={handleChange}
-                  className="w-full mb-2 p-2 rounded bg-[#0F0F0F] text-white"
+                  className={`w-full mb-2 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder}`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -287,20 +341,21 @@ const Calendar: React.FC = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full mb-4 p-2 rounded bg-[#0F0F0F] text-white"
+                  className={`w-full mb-4 p-2 rounded ${styles.inputBg} ${styles.inputText} border ${styles.inputBorder}`}
+                  style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
                 >
                   <option value="work">Work</option>
                   <option value="personal">Personal</option>
                 </select>
                 <div className="flex justify-between">
                   <button
-                    className="bg-orange-500 hover:bg-orange-600 px-4 py-1 rounded"
+                    className="bg-orange-500 hover:bg-orange-600 px-4 py-1 rounded text-white"
                     onClick={handleAddEvent}
                   >
                     Save
                   </button>
                   <button
-                    className="bg-gray-600 hover:bg-gray-700 px-4 py-1 rounded"
+                    className={`${styles.buttonSecondary} px-4 py-1 rounded ${styles.buttonSecondaryText}`}
                     onClick={() => setShowModal(false)}
                   >
                     Cancel
