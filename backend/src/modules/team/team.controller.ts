@@ -7,7 +7,7 @@ export const createTeamMember = async (req: Request, res: Response) => {
   const parsed = createTeamMemberSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error);
 
-  const userId = req.session!.user.id;
+    const userId = req.session!.user.id;
 
   try {
     const result = await Service.createTeamMemberWrapper(userId, parsed.data);
@@ -19,7 +19,7 @@ export const createTeamMember = async (req: Request, res: Response) => {
 
 export const getTeamMembers = async (req: Request, res: Response) => {
   const userId = req.session!.user.id;
-  const projectId = parseInt(req.params.projectId);
+  const projectId = parseInt(req.params.milestoneId);
 
   // First, check that user is a member of the project
   const membership = await Service.getTeamMember(userId, projectId);
