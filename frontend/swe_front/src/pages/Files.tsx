@@ -141,7 +141,7 @@ const FileManagement: React.FC<FileManagementProps> = ({ projectId }) => {
     const newFiles = Array.from(event.target.files!).map((file, index) => {
       const fileType = getFileType(file.name);
       const fileIcon = getFileIcon(file.name);
-      //temporary URL instead of server for files for the DEMO
+      //temporary URL instead of server for files
      
       const fileUrl = URL.createObjectURL(file);
 
