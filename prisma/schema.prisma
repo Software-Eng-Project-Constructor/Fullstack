@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  privilege String   @default("Viewer")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  description       String?
+  theme             String  @default("dark")
+  audioNotification Boolean @default(true)
+  profilePicPath    String?
+
+  createdTasks  Task[] @relation("CreatedTasks")
+  tasksAssigned Task[] @relation("AssignedTasks")
+
+  teamMembers     TeamMember[]
+  taskAssignments TaskAssignment[]
+  comments        Comment[]
+  notifications   Notification[]
+  ownedProjects   Project[]        @relation("OwnerProjects")
+
+  files File[] @relation("UserFiles")
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  startDate   DateTime?
+  dueDate     DateTime?
+  budget      Float?
+  ownerId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  owner       User         @relation("OwnerProjects", fields: [ownerId], references: [id])
+  teamMembers TeamMember[]
+  milestones  Milestone[]
+  tasks       Task[]
+  statuses    TaskStatus[]
+  budgets     Budget[]
+  expenses    Expense[]
+  files       File[]       @relation("ProjectFiles")
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  role      String   @default("Participant")
+  projectId Int
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  status      String
+  projectId   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  events  Event[]
+  Task    Task[]
+}
+
+model Task {
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  approved     Boolean?  @default(false)
+  status       Int?      @default(0)
+  priority     Int?      @default(0)
+  startDate    DateTime?
+  dueDate      DateTime?
+  projectId    Int
+  milestoneId  String?
+  assignedToId String?
+
+  createdById String
+  createdBy   User   @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedTo      User?            @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+  project         Project          @relation(fields: [projectId], references: [id])
+  milestone       Milestone?       @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  taskAssignments TaskAssignment[]
+  comments        Comment[]
+}
+
+model TaskStatus {
+  id         String @id @default(uuid())
+  name       String @unique
+  orderIndex Int    @default(0)
+  projectId  Int
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model TaskAssignment {
+  taskId String
+  userId String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  text      String
+  timestamp DateTime @default(now())
+  userId    String
+  taskId    String
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  text      String
+  timestamp DateTime @default(now())
+  userId    String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Budget {
+  id        String @id @default(uuid())
+  allocated Float
+  spent     Float  @default(0.0)
+  projectId Int
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  expenses Expense[]
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  category  String
+  amount    Float
+  date      DateTime
+  budgetId  String
+  projectId Int
+
+  budget  Budget  @relation(fields: [budgetId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  priority    String?
+  category    String?
+  milestoneId String?
+
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model File {
+  id         String   @id @default(uuid())
+  filename   String
+  mimetype   String
+  path       String
+  uploadedAt DateTime @default(now())
+
+  project   Project @relation("ProjectFiles", fields: [projectId], references: [id])
+  projectId Int
+
+  user   User   @relation("UserFiles", fields: [userId], references: [id])
+  userId String
+}
