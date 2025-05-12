@@ -9,6 +9,7 @@ import taskRoutes from "./modules/tasks/task.routes";
 import teamRoutes from "./modules/team/team.routes"
 import cors from "cors";
 import eventsRouter from "./modules/event/event.routes"
+import stepRoutes from "./modules/steps/step.routes";
 import userRoutes from "./modules/users/users.routes";
 import milestoneRoutes from "./modules/milestones/milestone.routes";
 
@@ -44,6 +45,7 @@ app.use("/api/teams", authGuard, teamRoutes);        // protected
 app.use("/api/milestones", authGuard, milestoneRoutes); // protected
 app.use("/api/events", eventsRouter);
 app.use("/api/users", authGuard, userRoutes); //Salamario code
+app.use("/api/steps", authGuard, stepRoutes); //
 
 // ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));

@@ -7,7 +7,7 @@ export const createTeamMember = async (req: Request, res: Response) => {
   const parsed = createTeamMemberSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error);
 
-  const userId = req.session!.user.id;
+    const userId = req.session!.user.id;
 
   try {
     const result = await Service.createTeamMemberWrapper(userId, parsed.data);

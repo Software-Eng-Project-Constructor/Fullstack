@@ -72,9 +72,10 @@ model Milestone {
   projectId   Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  events  Event[]
-  Task    Task[]
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  events      Event[]
+  Task        Task[]
+  steps       Step[]
 }
 
 model Task {
@@ -101,6 +102,21 @@ model Task {
   milestone       Milestone?       @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   taskAssignments TaskAssignment[]
   comments        Comment[]
+}
+
+model Step {
+  id          String    @id @default(uuid())
+  title       String
+  milestoneId String
+  description String?
+  status      Int?      @default(0)
+  startDate   DateTime?
+  dueDate     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
 }
 
 model TaskStatus {
