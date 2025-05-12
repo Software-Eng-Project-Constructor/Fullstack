@@ -223,7 +223,7 @@ const Settings = () => {
         </div>
 
         <div className="border-t border-gray-700 pt-4">
-          <label className="block font-medium mb-1 flex justify-between items-center">
+          <label className="block font-medium mb-1 justify-between items-center">
             <span>Password</span>
             <button
               type="button"
