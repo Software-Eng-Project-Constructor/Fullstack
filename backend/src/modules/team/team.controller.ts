@@ -19,7 +19,7 @@ export const createTeamMember = async (req: Request, res: Response) => {
 
 export const getTeamMembers = async (req: Request, res: Response) => {
   const userId = req.session!.user.id;
-  const projectId = parseInt(req.params.milestoneId);
+  const projectId = parseInt(req.params.projectId);
 
   // First, check that user is a member of the project
   const membership = await Service.getTeamMember(userId, projectId);
