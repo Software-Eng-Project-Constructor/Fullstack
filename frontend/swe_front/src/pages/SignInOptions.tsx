@@ -15,7 +15,7 @@ function SignUpOptions() {
 
           {/* Manual Sign In Button */}
           <Link
-            to="/sign-in-manually"
+            to="/signinmanually"
             className="w-full block p-3 bg-[#1C1C1C] text-white text-md font-medium rounded-lg transition hover:bg-gray-800 mb-4"
           >
             Sign In with Email
