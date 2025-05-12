@@ -35,9 +35,6 @@ function Sidebar({ isOpen, activeTab, onTabChange, toggleSidebar }: SidebarProps
     return theme === 'light' ? 'text-gray-800' : 'text-gray-300';
   };
 
-  const getHoverClass = () => {
-    return theme === 'light' ? 'hover:bg-gray-200' : 'hover:bg-[#1C1D1D]';
-  };
 
   const navItems = [
     { name: "Overview", icon: faHome },

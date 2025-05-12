@@ -210,13 +210,13 @@ function Dashboard() {
     );
   }
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  // const toggleSidebar = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-  };
+  // const handleTabChange = (tab: string) => {
+  //   setActiveTab(tab);
+  // };
 
   const getThemeClasses = () => {
     if (theme === 'light') {

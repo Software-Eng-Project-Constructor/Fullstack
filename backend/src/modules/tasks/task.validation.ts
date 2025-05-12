@@ -9,7 +9,8 @@ export const createTaskSchema = z.object({
   dueDate: z.string().datetime().optional(),
   milestoneId: z.string().optional(),
   projectId: z.union([z.number(), z.string().transform(Number)]),
-  createdById: z.string(), // ✅ NEW
+  createdById: z.string(),
+  assignedTo: z.array(z.string()).optional() // added assigned to to show in task WHO
 });
 
 export const updateTaskSchema = createTaskSchema.partial();
