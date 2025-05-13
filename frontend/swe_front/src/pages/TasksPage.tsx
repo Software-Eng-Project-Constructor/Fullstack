@@ -158,7 +158,7 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
     fetchTasks();
   }, [projectId]);
 
-  // handle modal input
+  //vitor assigned to backend connection
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewTask((prev) => ({ ...prev, [name]: value }));
@@ -295,7 +295,25 @@ const TasksPage: React.FC<TasksPageProps> = ({ projectId, user }) => {
               onChange={handleChange}
               className={`w-full mb-4 p-2 rounded ${styles.inputBg} ${styles.inputText} ${styles.inputBorder}`}
             />
+            
+              {/* <select
+                name="status"
+                value={newTask.status}
+                onChange={handleChange}
+                className={`w-full mb-4 p-2 rounded ${styles.inputBg} ${styles.inputText} ${styles.inputBorder}`}
+              >
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
 
+              <input
+                type="date"
+                name="deadline"
+                value={newTask.deadline}
+                onChange={handleChange}
+                className={`w-full mb-4 p-2 rounded ${styles.inputBg} ${styles.inputText} ${styles.inputBorder}`}
+              /> */}
             {/* ─── Assigned To multi-select ───────────────────────────────── */}
             <div className="mb-4">
               <p className="mb-2">Assigned To:</p>
