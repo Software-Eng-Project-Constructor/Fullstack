@@ -24,7 +24,7 @@ export const deleteStep = async (stepId: string) => {
 
 export const isTeamMember = async (userId: string, milestoneId: string) => {
   const milestone = await prisma.milestone.findUnique({
-    where: { id: milestoneId },
+    where: { id: milestoneId},
     select: { projectId: true },
   });
 

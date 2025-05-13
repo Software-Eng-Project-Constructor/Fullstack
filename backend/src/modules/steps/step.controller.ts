@@ -4,7 +4,7 @@ import * as StepService from "./step.service";
 export const createStep = async (req: Request, res: Response) => {
   try {
     const userId = req.session!.user.id;
-    const isAuthorized = await StepService.isTeamMember(userId, req.params.milestoneId);
+    const isAuthorized = await StepService.isTeamMember(userId, req.body.milestoneId);
     if (!isAuthorized) throw new Error("Forbidden");
     const step = await StepService.createStep(req.body);
     res.status(201).json(step);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FaListCheck, FaCalendar, FaUsers, FaPlus } from 'react-icons/fa6';
+import { FaListCheck, FaCalendar, FaPlus } from 'react-icons/fa6'; // Removed FaUsers
 import axios from 'axios';
 import ProgressBar from '../components/progressbar';
 import Swal from 'sweetalert2';
@@ -25,28 +25,38 @@ axios.interceptors.response.use(
   }
 );
 
+// Updated Task interface to match the 'Step' structure from the new API
+// Removed 'assignedTo'
 interface Task {
-  id: number;
+  id: number; // Assuming step id is number based on the example endpoint
   title: string;
   description: string;
-  completed: boolean;
-  assignedTo: string[];
-  status: string;
+  status: number; // 0 = pending, 1 = in progress, 2 = finished
+  startDate?: string; // Changed from startsDate to startDate
+  dueDate?: string; // Optional based on API structure
+  milestoneId: string; // Link to the parent milestone
 }
 
 interface Milestone {
   id: string;
-  projectId: number;  // Changed from string to number to match database schema
+  projectId: number;
   title: string;
   description: string;
   dueDate: string;
-  status: 'Not Started' | 'In Progress' | 'Completed';
-  tasks: Task[];
+  status: 'Not Started' | 'In Progress' | 'Completed'; // Milestone status remains the same
+  tasks: Task[]; // This will now hold 'Step' objects
 }
 
 interface ProjectMilestonesProps {
   projectId: string;
 }
+
+// Define status mapping for clarity
+const TASK_STATUS = {
+  PENDING: 0,
+  IN_PROGRESS: 1,
+  FINISHED: 2,
+};
 
 const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
   const { theme } = useTheme(); // Use theme context
@@ -58,17 +68,19 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     description: '',
     dueDate: '',
     status: 'Not Started',
-    tasks: [],
+    tasks: [], // Initialize as empty
   });
   const [showTaskModal, setShowTaskModal] = useState<string | null>(null);
-  const [newTask, setNewTask] = useState<Omit<Task, 'id'>>({
+  // Initialize newTask with the numerical status and date fields, removed assignedTo
+  const [newTask, setNewTask] = useState<Omit<Task, 'id' | 'milestoneId'>>({
     title: '',
     description: '',
-    assignedTo: [],
-    completed: false,
-    status: 'Pending',
+    status: TASK_STATUS.PENDING, // Default status is pending (0)
+    startDate: '', // Changed from startsDate to startDate
+    dueDate: '', // Initialize dueDate
   });
-  const [contributors, setContributors] = useState<any[]>([]);
+  // Removed contributors state as it's no longer used for task assignment
+  // const [contributors, setContributors] = useState<any[]>([]);
 
   // Define theme-specific styles
   const getThemeStyles = () => {
@@ -81,27 +93,27 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         subheaderText: 'text-gray-600',
         normalText: 'text-gray-700',
         mutedText: 'text-gray-500',
-        
+
         // Card styles
         cardBg: 'bg-gray-50',
         cardInnerBg: 'bg-white',
         cardInnerBgAlt: 'bg-gray-100',
         cardShadow: 'shadow-sm',
         cardBorder: 'border border-gray-200',
-        
+
         // Form elements
         inputBg: 'bg-white',
         inputBorder: 'border-gray-300',
         inputText: 'text-gray-800',
-        
+
         // Buttons
         buttonSecondary: 'bg-gray-300 hover:bg-gray-400',
         buttonSecondaryText: 'text-gray-800',
-        
-        // Task checkboxes
+
+        // Task checkboxes (will need adjustment for status number)
         checkboxBg: 'bg-white',
         checkboxBorder: 'border-gray-400',
-        
+
         // Modal
         modalBg: 'bg-white',
         modalOverlay: 'bg-black bg-opacity-50',
@@ -115,27 +127,27 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         subheaderText: 'text-gray-400',
         normalText: 'text-gray-200',
         mutedText: 'text-gray-400',
-        
+
         // Card styles
         cardBg: 'bg-[#1C1D1D]',
         cardInnerBg: 'bg-[#0F0F0F]',
         cardInnerBgAlt: 'bg-[#1C1D1D]',
         cardShadow: 'shadow-md',
         cardBorder: 'border border-gray-800',
-        
+
         // Form elements
         inputBg: 'bg-[#0F0F0F]',
         inputBorder: 'border-gray-700',
         inputText: 'text-white',
-        
+
         // Buttons
         buttonSecondary: 'bg-gray-600 hover:bg-gray-700',
         buttonSecondaryText: 'text-white',
-        
-        // Task checkboxes
+
+        // Task checkboxes (will need adjustment for status number)
         checkboxBg: 'bg-gray-800',
         checkboxBorder: 'border-gray-600',
-        
+
         // Modal
         modalBg: 'bg-[#1C1D1D]',
         modalOverlay: 'bg-black bg-opacity-50',
@@ -145,15 +157,17 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
   const styles = getThemeStyles();
 
-  useEffect(() => {
-    const fetchContributors = async () => {
-      const data = await getContributors();
-      setContributors(data);
-    };
-    fetchContributors();
-  }, [projectId]);
+  // Removed fetchContributors effect as it's no longer needed for task assignment
+  // useEffect(() => {
+  //   const fetchContributors = async () => {
+  //     const data = await getContributors();
+  //     setContributors(data);
+  //   };
+  //   fetchContributors();
+  // }, [projectId]);
 
   useEffect(() => {
+    // Reset new milestone state when project ID changes
     setNewMilestone({
       title: '',
       description: '',
@@ -163,25 +177,28 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     });
   }, [projectId]);
 
+  // Calculate milestone progress based on step status (2 = finished)
   const calculateMilestoneProgress = (tasks: Task[]) => {
     if (!tasks?.length) return 0;
-    const completedTasks = tasks.filter(task => task.completed).length;
+    const completedTasks = tasks.filter(task => task.status === TASK_STATUS.FINISHED).length;
     return Math.round((completedTasks / tasks.length) * 100);
   };
 
+  // Calculate overall progress based on all steps status (2 = finished)
   const calculateOverallProgress = () => {
     if (!milestones.length) return 0;
-    const totalTasks = milestones.reduce((acc, m) => acc + (m.tasks?.length || 0), 0);
-    if (totalTasks === 0) return 0;
-    const completedTasks = milestones.reduce(
-      (acc, m) => acc + (m.tasks?.filter(t => t.completed)?.length || 0),
-      0
-    );
-    return Math.round((completedTasks / totalTasks) * 100);
+    const allTasks = milestones.flatMap(m => m.tasks || []);
+    if (allTasks.length === 0) return 0;
+    const completedTasks = allTasks.filter(task => task.status === TASK_STATUS.FINISHED).length;
+    return Math.round((completedTasks / allTasks.length) * 100);
   };
 
-  const updateMilestoneStatus = async (milestoneId: string, tasks: Task[]) => {
-    const progress = calculateMilestoneProgress(tasks);
+  // Update milestone status based on its steps' progress
+  const updateMilestoneStatus = async (milestoneId: string) => {
+    const milestone = milestones.find(m => m.id === milestoneId);
+    if (!milestone) return;
+
+    const progress = calculateMilestoneProgress(milestone.tasks);
     let newStatus: Milestone['status'] = 'Not Started';
 
     if (progress === 100) {
@@ -190,29 +207,48 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       newStatus = 'In Progress';
     }
 
-    try {
-      const response = await axios.patch(`/api/milestones/${milestoneId}`, {
-        status: newStatus,
-        tasks,
-      });
+    // Only update milestone status if it actually changes
+    if (milestone.status !== newStatus) {
+      try {
+        await axios.patch(`/api/milestones/${milestoneId}`, {
+          status: newStatus,
+          // We don't send tasks back with the milestone update now
+        });
 
-      setMilestones(prev =>
-        prev.map(m =>
-          m.id === milestoneId ? { ...m, status: newStatus, tasks: response.data.tasks } : m
-        )
-      );
-    } catch (error) {
-      console.error('Error updating milestone status:', error);
+        setMilestones(prev =>
+          prev.map(m =>
+            m.id === milestoneId ? { ...m, status: newStatus } : m
+          )
+        );
+      } catch (error) {
+        console.error('Error updating milestone status:', error);
+      }
     }
   };
 
+  // Fetch milestones and their associated steps on component mount and projectId change
   useEffect(() => {
-    const fetchMilestones = async () => {
+    const fetchMilestonesAndSteps = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`/api/milestones?projectId=${projectId}`);
-        console.log('Fetched milestones:', response.data);
-        setMilestones(response.data);
+        const milestonesResponse = await axios.get(`/api/milestones?projectId=${projectId}`);
+        console.log('Fetched milestones:', milestonesResponse.data);
+
+        // For each milestone, fetch its steps using the new API endpoint
+        const milestonesWithSteps = await Promise.all(
+          milestonesResponse.data.map(async (milestone: Milestone) => {
+            try {
+              const stepsResponse = await axios.get(`/api/steps/milestone/${milestone.id}`);
+              console.log(`Fetched steps for milestone ${milestone.id}:`, stepsResponse.data);
+              return { ...milestone, tasks: stepsResponse.data || [] }; // Assign steps to tasks property
+            } catch (stepError) {
+              console.error(`Error fetching steps for milestone ${milestone.id}:`, stepError);
+              return { ...milestone, tasks: [] }; // Return milestone with empty tasks if fetching steps fails
+            }
+          })
+        );
+
+        setMilestones(milestonesWithSteps);
       } catch (error) {
         console.error('Error fetching milestones:', error);
       } finally {
@@ -220,33 +256,38 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       }
     };
 
-    fetchMilestones();
-  }, [projectId]);
+    fetchMilestonesAndSteps();
+  }, [projectId]); // Depend on projectId to refetch when it changes
 
   const handleAddMilestone = async () => {
     try {
       const milestone = {
         ...newMilestone,
         projectId: parseInt(projectId), // Convert string projectId to number
-        id: Date.now().toString(),
         dueDate: new Date(newMilestone.dueDate!).toISOString(),
-        tasks: [],
+        tasks: [], // Tasks are managed separately now
       };
 
+      // Post the new milestone
       const response = await axios.post('/api/milestones', milestone);
-      setMilestones(prev => [...prev, response.data]);
+      const createdMilestone = response.data;
 
+      // Add the created milestone with an empty tasks array to the state
+      setMilestones(prev => [...prev, { ...createdMilestone, tasks: [] }]);
+
+      // Add event for the milestone
       await axios.post('/api/events', {
-        id: Date.now().toString(),
-        title: `Milestone Due: ${milestone.title}`,
-        description: milestone.description,
-        startDate: milestone.dueDate,
-        endDate: milestone.dueDate,
+        // id: Date.now().toString(), // Backend should assign ID, if not, uncomment this
+        title: `Milestone Due: ${createdMilestone.title}`,
+        description: createdMilestone.description,
+        startDate: createdMilestone.dueDate,
+        endDate: createdMilestone.dueDate, // Assuming milestone due date is both start and end for event
         priority: 'high',
         category: 'milestone',
-        milestoneId: milestone.id,
+        milestoneId: createdMilestone.id,
       });
 
+      // Close modal and reset form
       setShowModal(false);
       setNewMilestone({
         title: '',
@@ -273,51 +314,56 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     }
   };
 
-  const getContributors = async () => {
-    try {
-      const response = await axios.get(`/api/teams/${projectId}`);
-      return response.data.map((member: any) => ({
-        name: member.user.name,
-        role: member.role,
-      }));
-    } catch (error) {
-      console.error('Error fetching contributors:', error);
-      return [];
-    }
-  };
+  // Removed getContributors function as it's no longer used
 
+  // Handle adding a new task (step) to a milestone using the new API
   const handleAddTask = async (milestoneId: string) => {
     try {
       const milestone = milestones.find(m => m.id === milestoneId);
-      if (!milestone) return;
+      if (!milestone) {
+        console.error('Milestone not found');
+        return;
+      }
 
-      const newTaskData = {
-        id: Date.now(),
-        ...newTask,
-        assignedTo: newTask.assignedTo || [],
-        completed: false,
-        status: 'Pending',
-        projectId: milestone.projectId // Include the milestone's projectId
+      // Convert date strings to ISO-8601 format before sending
+      const formattedStartDate = newTask.startDate ? new Date(newTask.startDate).toISOString() : undefined;
+      const formattedDueDate = newTask.dueDate ? new Date(newTask.dueDate).toISOString() : undefined;
+
+
+      // Prepare the new step data according to the API structure
+      // Removed assignedTo from the data sent
+      const newStepData = {
+        title: newTask.title,
+        description: newTask.description,
+        status: TASK_STATUS.PENDING, // New tasks start as pending (0)
+        startDate: formattedStartDate, // Use the formatted date
+        dueDate: formattedDueDate, // Use the formatted date
+        milestoneId: milestoneId, // Link the step to the milestone
       };
 
-      const updatedTasks = [...(milestone.tasks || []), newTaskData];
+      // Post the new step to the API
+      const response = await axios.post('/api/steps', newStepData);
+      const createdStep = response.data;
 
-      await axios.patch(`/api/milestones/${milestoneId}`, {
-        ...milestone,
-        tasks: updatedTasks
-      });
-
+      // Update the state by adding the new step to the correct milestone's tasks array
       setMilestones(prev =>
-        prev.map(m => (m.id === milestoneId ? { ...m, tasks: updatedTasks } : m))
+        prev.map(m =>
+          m.id === milestoneId ? { ...m, tasks: [...(m.tasks || []), createdStep] } : m
+        )
       );
 
+      // Update the milestone status based on the new task list
+      updateMilestoneStatus(milestoneId);
+
+      // Close modal and reset form
       setShowTaskModal(null);
+      // Reset newTask state, removed assignedTo
       setNewTask({
         title: '',
         description: '',
-        assignedTo: [],
-        completed: false,
-        status: 'Pending',
+        status: TASK_STATUS.PENDING,
+        startDate: '', // Changed from startsDate to startDate
+        dueDate: '',
       });
 
       Swal.fire({
@@ -337,6 +383,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     }
   };
 
+  // Handle deleting a milestone and its associated steps
   const handleDeleteMilestone = async (id: string) => {
     const result = await Swal.fire({
       title: 'Delete Milestone',
@@ -351,11 +398,16 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
 
     if (result.isConfirmed) {
       try {
+        // Assuming backend handles cascading delete of steps when milestone is deleted.
+        // If not, you would need to fetch all steps for this milestone
+        // and delete them individually using DELETE /api/steps/[stepId]
+
         // Delete associated events first
         await axios.delete(`/api/events?milestoneId=${id}`);
         // Then delete the milestone
         await axios.delete(`/api/milestones/${id}`);
 
+        // Remove the milestone from the state
         setMilestones(prev => prev.filter(m => m.id !== id));
 
         Swal.fire({
@@ -376,18 +428,66 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     }
   };
 
+  // Handle toggling a task (step) status using the new API
   const handleToggleTask = async (milestoneId: string, taskId: number) => {
     try {
       const milestone = milestones.find(m => m.id === milestoneId);
       if (!milestone) return;
 
-      const updatedTasks = milestone.tasks.map(task =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
+      const taskToToggle = milestone.tasks.find(task => task.id === taskId);
+      if (!taskToToggle) return;
+
+      // Determine the new status (toggle between pending and finished)
+      // If current status is finished, set to pending (0), otherwise set to finished (2)
+      const newStatus = taskToToggle.status === TASK_STATUS.FINISHED ? TASK_STATUS.PENDING : TASK_STATUS.FINISHED;
+
+      // Prepare the update data for the step
+      const updateData = {
+        ...taskToToggle, // Include existing data
+        status: newStatus, // Update the status
+        // Ensure dates are in ISO format if they exist
+        startDate: taskToToggle.startDate ? new Date(taskToToggle.startDate).toISOString() : undefined,
+        dueDate: taskToToggle.dueDate ? new Date(taskToToggle.dueDate).toISOString() : undefined,
+      };
+
+      // Send the update to the API using PUT /api/steps/[stepId]
+      await axios.put(`/api/steps/${taskId}`, updateData);
+
+      // Update the state with the new task status
+      setMilestones(prev =>
+        prev.map(m =>
+          m.id === milestoneId
+            ? {
+                ...m,
+                tasks: m.tasks.map(task =>
+                  task.id === taskId ? { ...task, status: newStatus } : task
+                ),
+              }
+            : m
+        )
       );
 
-      await updateMilestoneStatus(milestoneId, updatedTasks);
+      // Update the milestone status based on the new task list
+      updateMilestoneStatus(milestoneId);
+
     } catch (error) {
       console.error('Error updating task:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to update task status.',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
+    }
+  };
+
+  // Helper to get status text from number
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case TASK_STATUS.PENDING: return 'Pending';
+      case TASK_STATUS.IN_PROGRESS: return 'In Progress';
+      case TASK_STATUS.FINISHED: return 'Finished';
+      default: return 'Unknown';
     }
   };
 
@@ -492,31 +592,39 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                     <div key={task.id} className={`${styles.cardInnerBg} p-4 rounded-lg ${styles.cardBorder}`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
+                          {/* Checkbox reflects status 2 (finished) */}
                           <input
                             type="checkbox"
-                            checked={task.completed}
+                            checked={task.status === TASK_STATUS.FINISHED}
                             onChange={() => handleToggleTask(milestone.id, task.id)}
                             className={`w-4 h-4 text-orange-500 ${styles.checkboxBg} rounded ${styles.checkboxBorder} focus:ring-orange-500`}
                           />
                           <span
                             className={`ml-3 ${
-                              task.completed ? 'line-through ' + styles.mutedText : styles.normalText
+                              task.status === TASK_STATUS.FINISHED ? 'line-through ' + styles.mutedText : styles.normalText
                             }`}
                           >
                             {task.title}
                           </span>
                         </div>
                         <div className={`text-sm ${styles.mutedText}`}>
-                          {task.assignedTo && task.assignedTo.length > 0 ? (
-                            <div className="flex items-center">
-                              <FaUsers className="mr-2" />
-                              {task.assignedTo.join(', ')}
-                            </div>
-                          ) : (
-                            'Unassigned'
-                          )}
+                           {/* Display status text */}
+                          <span>Status: {getStatusText(task.status)}</span>
+                           {/* Removed assignedTo display */}
                         </div>
                       </div>
+                       {/* Display task description if available */}
+                       {task.description && (
+                          <p className={`text-xs mt-2 ${styles.mutedText}`}>{task.description}</p>
+                       )}
+                       {/* Display task dates if available */}
+                       {(task.startDate || task.dueDate) && ( // Changed from startsDate to startDate
+                          <div className={`text-xs mt-2 ${styles.mutedText}`}>
+                             {task.startDate && <span>Start: {new Date(task.startDate).toLocaleDateString()}</span>} {/* Changed from startsDate to startDate */}
+                             {task.startDate && task.dueDate && <span className="mx-1">|</span>} {/* Changed from startsDate to startDate */}
+                             {task.dueDate && <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>}
+                          </div>
+                       )}
                     </div>
                   ))}
                 </div>
@@ -532,6 +640,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         )}
       </div>
 
+      {/* Add Task Modal */}
       {showTaskModal && (
         <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
           <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
@@ -551,7 +660,24 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
               className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
               rows={3}
             />
-            <select
+             <input
+              type="date"
+              placeholder="Start Date (Optional)"
+              value={newTask.startDate} // Changed from startsDate to startDate
+              onChange={e => setNewTask(prev => ({ ...prev, startDate: e.target.value }))} // Changed from startsDate to startDate
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
+            />
+             <input
+              type="date"
+              placeholder="Due Date (Optional)"
+              value={newTask.dueDate}
+              onChange={e => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
+            />
+            {/* Removed the assignee select input */}
+            {/* <select
               multiple
               onChange={e =>
                 setNewTask(prev => ({
@@ -568,8 +694,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                   {c.name} ({c.role})
                 </option>
               ))}
-            </select>
-            <p className={`text-sm ${styles.mutedText} mb-4`}>Task will inherit milestone's deadline</p>
+            </select> */}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowTaskModal(null)}
@@ -588,6 +713,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         </div>
       )}
 
+      {/* Add Milestone Modal */}
       {showModal && (
         <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
           <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
