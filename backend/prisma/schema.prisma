@@ -49,6 +49,8 @@ model Project {
   statuses    TaskStatus[]
   budgets     Budget[]
   expenses    Expense[]
+  events Event[]
+
 }
 
 model TeamMember {
@@ -73,7 +75,6 @@ model Milestone {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  events      Event[]
   Task        Task[]
   steps       Step[]
 }
@@ -183,14 +184,15 @@ model Expense {
 model Event {
   id          String   @id @default(uuid())
   title       String
-  description String?
+  description String
   startDate   DateTime
   endDate     DateTime
-  priority    String?
-  category    String?
-  milestoneId String?
+  priority    String   // e.g., "low", "medium", "high"
+  category    String   // e.g., "work", "personal"
+  projectId   Int      // required: links to Project
 
-  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

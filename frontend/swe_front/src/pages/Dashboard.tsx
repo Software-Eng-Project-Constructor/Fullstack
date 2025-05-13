@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import OverviewPage from "./OverviewPage";
+import OverviewPage, { OverviewPageProps } from "./OverviewPage";
 import TasksPage from "./TasksPage";
 import MembersPage from "./MembersPage";
 import Calendar from "./Calendar";
@@ -10,8 +10,8 @@ import Settings from "./Settings";
 import ProjectMilestones from "./Milstone";
 import { FaTimes } from "react-icons/fa";
 import axios from "axios";
-import Swal from 'sweetalert2';
-import { useTheme } from '../context/ThemeContext';
+import Swal from "sweetalert2";
+import { useTheme } from "../context/ThemeContext";
 
 axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:5001";
@@ -31,13 +31,13 @@ interface User {
 }
 
 interface UserPayload {
- id: string;
- name: string;
- email: string;
- description?: string;
- theme?: string;
- audioNotification?: boolean;
- profilePicPath?: string;
+  id: string;
+  name: string;
+  email: string;
+  description?: string;
+  theme?: string;
+  audioNotification?: boolean;
+  profilePicPath?: string;
 }
 
 function Dashboard() {
@@ -68,12 +68,15 @@ function Dashboard() {
   useEffect(() => {
     const fetchProfilePic = async () => {
       try {
-        const res = await axios.get<UserPayload>(`${API_URL}/api/users/me/full`, {
-          withCredentials: true,
-        });
+        const res = await axios.get<UserPayload>(
+          `${API_URL}/api/users/me/full`,
+          {
+            withCredentials: true,
+          }
+        );
         const fullUser = res.data;
 
-        setUser(currentUser => {
+        setUser((currentUser) => {
           if (!currentUser) return null;
           return {
             ...currentUser,
@@ -90,7 +93,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Fetch owned projects
     axios
       .get(`${API_URL}/api/projects`, { withCredentials: true })
@@ -106,7 +109,9 @@ function Dashboard() {
       .get(`${API_URL}/api/projects/all`, { withCredentials: true })
       .then((res) => {
         const allProjects = res.data;
-        const memberProjects = allProjects.filter((project: Project) => project.ownerId !== user.id);
+        const memberProjects = allProjects.filter(
+          (project: Project) => project.ownerId !== user.id
+        );
         setMemberProjects(memberProjects);
         if (allProjects.length > 0 && !activeProjectId) {
           setActiveProjectId(allProjects[0].id);
@@ -117,7 +122,7 @@ function Dashboard() {
   const handleAddProject = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!newProjectName.trim()) return;
-    
+
     try {
       const res = await axios.post(
         `${API_URL}/api/projects`,
@@ -131,18 +136,18 @@ function Dashboard() {
 
       // Show success notification
       Swal.fire({
-        title: 'Success!',
-        text: 'Project has been created successfully',
-        icon: 'success',
-        confirmButtonColor: '#f97316',
+        title: "Success!",
+        text: "Project has been created successfully",
+        icon: "success",
+        confirmButtonColor: "#f97316",
       });
     } catch (error) {
       console.error("Error creating project:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to create project',
-        icon: 'error',
-        confirmButtonColor: '#f97316',
+        title: "Error!",
+        text: "Failed to create project",
+        icon: "error",
+        confirmButtonColor: "#f97316",
       });
     }
   };
@@ -150,14 +155,14 @@ function Dashboard() {
   const handleDeleteProject = async (projectId: number) => {
     // Add confirmation dialog
     const result = await Swal.fire({
-      title: 'Delete Project',
-      text: 'Are you sure you want to delete this project? This action cannot be undone.',
-      icon: 'warning',
+      title: "Delete Project",
+      text: "Are you sure you want to delete this project? This action cannot be undone.",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
@@ -177,18 +182,18 @@ function Dashboard() {
 
         // Show success notification
         Swal.fire({
-          title: 'Deleted!',
-          text: 'Project has been deleted successfully',
-          icon: 'success',
-          confirmButtonColor: '#f97316',
+          title: "Deleted!",
+          text: "Project has been deleted successfully",
+          icon: "success",
+          confirmButtonColor: "#f97316",
         });
       } catch (error) {
         console.error("Error deleting project:", error);
         Swal.fire({
-          title: 'Error!',
-          text: 'Failed to delete project',
-          icon: 'error',
-          confirmButtonColor: '#f97316',
+          title: "Error!",
+          text: "Failed to delete project",
+          icon: "error",
+          confirmButtonColor: "#f97316",
         });
       }
     }
@@ -219,35 +224,35 @@ function Dashboard() {
   // };
 
   const getThemeClasses = () => {
-    if (theme === 'light') {
+    if (theme === "light") {
       return {
-        mainBg: 'bg-white',
-        headerBg: 'bg-gray-100',
-        headerBorder: 'border-gray-300',
-        projectSectionBg: 'bg-gray-200',
-        cardBg: 'bg-gray-100',
-        modalBg: 'bg-white',
-        inputBg: 'bg-gray-100',
-        textColor: 'text-gray-900',
-        headerTextColor: 'text-gray-800',
-        tabContentBg: 'bg-gray-50',
+        mainBg: "bg-white",
+        headerBg: "bg-gray-100",
+        headerBorder: "border-gray-300",
+        projectSectionBg: "bg-gray-200",
+        cardBg: "bg-gray-100",
+        modalBg: "bg-white",
+        inputBg: "bg-gray-100",
+        textColor: "text-gray-900",
+        headerTextColor: "text-gray-800",
+        tabContentBg: "bg-gray-50",
       };
     } else {
       return {
-        mainBg: 'bg-gray-900',
-        headerBg: 'bg-gray-900',
-        headerBorder: 'border-gray-800',
-        projectSectionBg: 'bg-[#1C1D1D]',
-        cardBg: 'bg-gray-800',
-        modalBg: 'bg-[#1C1D1D]',
-        inputBg: 'bg-[#0F0F0F]',
-        textColor: 'text-white',
-        headerTextColor: 'text-white',
-        tabContentBg: 'bg-gray-900',
+        mainBg: "bg-gray-900",
+        headerBg: "bg-gray-900",
+        headerBorder: "border-gray-800",
+        projectSectionBg: "bg-[#1C1D1D]",
+        cardBg: "bg-gray-800",
+        modalBg: "bg-[#1C1D1D]",
+        inputBg: "bg-[#0F0F0F]",
+        textColor: "text-white",
+        headerTextColor: "text-white",
+        tabContentBg: "bg-gray-900",
       };
     }
   };
-  
+
   const themeClasses = getThemeClasses();
 
   return (
@@ -259,17 +264,27 @@ function Dashboard() {
         toggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
 
-      <div className="flex-1 flex flex-col">
-        {/* Header section */}
-        <div className={`flex justify-between items-center p-4 ${themeClasses.headerBg} border-b ${themeClasses.headerBorder}`}>
-          <div className={`ml-10 text-xl font-semibold ${themeClasses.headerTextColor}`}>
+
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          isSidebarOpen ? "ml-64" : "ml-0"
+        }`}
+      >
+        <div
+          className={`flex justify-between items-center p-4 ${themeClasses.headerBg} border-b ${themeClasses.headerBorder}`}
+        >
+          <div
+            className={`ml-10 text-xl font-semibold ${themeClasses.headerTextColor}`}
+          >
             Dashboard
           </div>
           {user && (
-            <div className={`flex items-center gap-4 ${themeClasses.headerTextColor}`}>
+            <div
+              className={`flex items-center gap-4 ${themeClasses.headerTextColor}`}
+            >
               <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
                 {user.profilePicPath ? (
-                  user.profilePicPath.startsWith('data:image/') ? (
+                  user.profilePicPath.startsWith("data:image/") ? (
                     <img
                       src={user.profilePicPath}
                       alt="Profile"
@@ -297,26 +312,24 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Project sections and content */}
-        <div className="flex-1 overflow-auto">
-          <div className={`${themeClasses.projectSectionBg} p-4`}>
-            <h3 className={`${themeClasses.textColor} mb-2`}>Owned Projects</h3>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {ownedProjects.map((project) => (
-                <div key={project.id} className="relative flex items-center">
-                  <button
-                    onClick={() => setActiveProjectId(project.id)}
-                    className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
-                      project.id === activeProjectId
-                        ? "bg-orange-600 text-white"
-                        : theme === 'light' 
-                          ? "bg-gray-300 text-gray-800 hover:bg-gray-400" 
-                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    <span>{project.name}</span>
-                  </button>
 
+        <div className={`${themeClasses.projectSectionBg} p-4`}>
+          <h3 className={`${themeClasses.textColor} mb-2`}>Owned Projects</h3>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {ownedProjects.map((project) => (
+              <div key={project.id} className="relative flex items-center">
+                <button
+                  onClick={() => setActiveProjectId(project.id)}
+                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
+                    project.id === activeProjectId
+                      ? "bg-orange-600 text-white"
+                      : theme === "light"
+                        ? "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <span>{project.name}</span>
+                </button>
                   <span
                     role="button"
                     tabIndex={0}
@@ -338,81 +351,87 @@ function Dashboard() {
                 <span className="mr-2">+</span>
               </button>
             </div>
+          <h3 className={`${themeClasses.textColor} mb-2`}>Member Projects</h3>
+          <div className="flex flex-wrap gap-2">
+            {memberProjects.map((project) => (
+              <div key={project.id} className="relative flex items-center">
+                <button
+                  onClick={() => setActiveProjectId(project.id)}
+                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
+                    project.id === activeProjectId
+                      ? "bg-orange-600 text-white"
+                      : theme === "light"
+                        ? "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <span>{project.name}</span>
+                </button>
+              </div>
+            ))}
 
-            <h3 className={`${themeClasses.textColor} mb-2`}>Member Projects</h3>
-            <div className="flex flex-wrap gap-2">
-              {memberProjects.map((project) => (
-                <div key={project.id} className="relative flex items-center">
-                  <button
-                    onClick={() => setActiveProjectId(project.id)}
-                    className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
-                      project.id === activeProjectId
-                        ? "bg-orange-600 text-white"
-                        : theme === 'light' 
-                          ? "bg-gray-300 text-gray-800 hover:bg-gray-400" 
-                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    }`}
-                  >
-                    <span>{project.name}</span>
-                  </button>
-                </div>
-              ))}
-            </div>
           </div>
-
-          {isModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className={`${themeClasses.modalBg} p-6 rounded-lg w-96`}>
-                <h3 className={`${themeClasses.textColor} text-lg mb-4`}>Create New Project</h3>
-                <input
-                  className={`${themeClasses.inputBg} ${theme === 'light' ? 'text-gray-800' : 'text-white'} w-full mb-4 p-2 rounded border ${theme === 'light' ? 'border-gray-300' : 'border-gray-700'}`}
-                  type="text"
-                  placeholder="Project Name"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
-                    onClick={handleAddProject}
-                  >
-                    Create
-                  </button>
-                  <button
-                    className="bg-red-600 text-white px-4 py-1 rounded"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className={`${themeClasses.modalBg} p-6 rounded-lg w-96`}>
+              <h3 className={`${themeClasses.textColor} text-lg mb-4`}>
+                Create New Project
+              </h3>
+              <input
+                className={`${themeClasses.inputBg} ${theme === "light" ? "text-gray-800" : "text-white"} w-full mb-4 p-2 rounded border ${theme === "light" ? "border-gray-300" : "border-gray-700"}`}
+                type="text"
+                placeholder="Project Name"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
+                  onClick={handleAddProject}
+                >
+                  Create
+                </button>
+                <button
+                  className="bg-red-600 text-white px-4 py-1 rounded"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          )}
-          
-          <div className={`tab-content p-4 ${themeClasses.tabContentBg} ${themeClasses.textColor}`}>
-            {activeTab === "Overview" && activeProjectId && (
-              <OverviewPage projectId={activeProjectId} />
-            )}
-            {activeTab === "Members" && activeProjectId && user && 
-              <MembersPage projectId={activeProjectId} user={user} />
-            }
-            {activeTab === "Tasks" && activeProjectId && (
-              <TasksPage projectId={activeProjectId} user={user} />
-            )}
-            {activeTab === "Milestones" && activeProjectId && (
-              <ProjectMilestones projectId={activeProjectId.toString()} />
-            )}
-            {activeTab === "Calendar" && <Calendar />}
-            {activeTab === "Files" && activeProjectId && (
-              <Files projectId={activeProjectId} />
-            )}
-            {activeTab === "Settings" && <Settings />}
           </div>
+        )}
+
+        <div
+          className={`tab-content flex-1 overflow-y-auto p-4 ${themeClasses.tabContentBg} ${themeClasses.textColor}`}
+        >
+          {activeTab === "Overview" && activeProjectId && (
+            <OverviewPage
+              projectId={activeProjectId}
+              onTabChange={setActiveTab}
+            />
+          )}
+          {activeTab === "Members" && activeProjectId && user && (
+            <MembersPage projectId={activeProjectId} user={user} />
+          )}
+          {activeTab === "Tasks" && activeProjectId && (
+            <TasksPage projectId={activeProjectId} user={user} />
+          )}
+          {activeTab === "Milestones" && activeProjectId && (
+            <ProjectMilestones projectId={activeProjectId.toString()} />
+          )}
+          {activeTab === "Calendar" && activeProjectId && (
+            <Calendar projectId={activeProjectId} />
+          )}
+          {activeTab === "Files" && activeProjectId && (
+            <Files projectId={activeProjectId} />
+          )}
+          {activeTab === "Settings" && <Settings />}
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;
