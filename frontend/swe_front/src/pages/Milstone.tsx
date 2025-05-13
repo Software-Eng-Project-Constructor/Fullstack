@@ -282,16 +282,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       setMilestones(prev => [...prev, { ...createdMilestone, tasks: [] }]);
 
       // Add event for the milestone
-      await axios.post('/api/events', {
-        // id: Date.now().toString(), // Backend should assign ID, if not, uncomment this
-        title: `Milestone Due: ${createdMilestone.title}`,
-        description: createdMilestone.description,
-        startDate: createdMilestone.dueDate,
-        endDate: createdMilestone.dueDate, // Assuming milestone due date is both start and end for event
-        priority: 'high',
-        category: 'milestone',
-        milestoneId: createdMilestone.id,
-      });
+
 
       // Close modal and reset form
       setShowAddMilestoneModal(false); // Use renamed state
@@ -409,7 +400,6 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         // and delete them individually using DELETE /api/steps/[stepId]
 
         // Delete associated events first
-        await axios.delete(`/api/events?milestoneId=${id}`);
         // Then delete the milestone
         await axios.delete(`/api/milestones/${id}`);
 
