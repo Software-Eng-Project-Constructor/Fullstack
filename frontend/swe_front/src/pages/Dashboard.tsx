@@ -215,13 +215,13 @@ function Dashboard() {
     );
   }
 
-  // const toggleSidebar = () => {
-  //   setIsSidebarOpen(!isSidebarOpen);
-  // };
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
-  // const handleTabChange = (tab: string) => {
-  //   setActiveTab(tab);
-  // };
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
 
   const getThemeClasses = () => {
     if (theme === "light") {
@@ -263,7 +263,6 @@ function Dashboard() {
         onTabChange={setActiveTab}
         toggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
-
 
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
@@ -312,7 +311,6 @@ function Dashboard() {
           )}
         </div>
 
-
         <div className={`${themeClasses.projectSectionBg} p-4`}>
           <h3 className={`${themeClasses.textColor} mb-2`}>Owned Projects</h3>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -330,27 +328,29 @@ function Dashboard() {
                 >
                   <span>{project.name}</span>
                 </button>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteProject(project.id);
-                    }}
-                    className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
-                  >
-                    <FaTimes />
-                  </span>
-                </div>
-              ))}
 
-              <button
-                className="bg-green-600 text-white px-4 py-2 rounded flex items-center"
-                onClick={() => setIsModalOpen(true)}
-              >
-                <span className="mr-2">+</span>
-              </button>
-            </div>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(project.id);
+                  }}
+                  className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
+                >
+                  <FaTimes />
+                </span>
+              </div>
+            ))}
+
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <span className="mr-2">+</span>
+            </button>
+          </div>
+
           <h3 className={`${themeClasses.textColor} mb-2`}>Member Projects</h3>
           <div className="flex flex-wrap gap-2">
             {memberProjects.map((project) => (
@@ -369,8 +369,9 @@ function Dashboard() {
                 </button>
               </div>
             ))}
-
           </div>
+        </div>
+
         {isModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className={`${themeClasses.modalBg} p-6 rounded-lg w-96`}>
