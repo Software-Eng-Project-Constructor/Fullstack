@@ -75,7 +75,6 @@ export const createTeamMemberWrapper = async (
     projectId: dto.projectId,
     role: dto.role,
   }
-  console.log(data)
   return createTeamMember(data); 
 };
 
@@ -83,9 +82,8 @@ export const createTeamMemberWrapper = async (
 export const deleteTeamMember = async (
   currentUserId: string,
   projectId: number,
-  targetUserEmail: string
+  targetUserId: string
 ) => {
-
   // Check permission of current user
   const currentMembership = await prisma.teamMember.findFirst({
     where: {
@@ -97,21 +95,13 @@ export const deleteTeamMember = async (
   if (!currentMembership || !["Owner", "Admin"].includes(currentMembership.role)) {
     throw new Error("Forbidden: Only Owner or Admin can remove team members.");
   }
-  const user = await prisma.user.findUnique({
-    where: { email: targetUserEmail},
-  });
-  if(!user){
-    throw new Error("User with that email does not exist.");
-  }
-  const targetUserId = user.id;
+
   // Prevent removing the Owner
   const targetMembership = await prisma.teamMember.findFirst({
     where: {
-      userId: targetUserId,
-      projectId
+      id: targetUserId,
     }
   });
-
   if (!targetMembership) {
     throw new Error("Target user is not a team member of this project.");
   }

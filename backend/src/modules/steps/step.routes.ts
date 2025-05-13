@@ -14,9 +14,9 @@ router.get("/:stepId", Ctrl.getStep);
 router.get("/milestone/:milestoneId", Ctrl.getStepsByMilestone);
 
 // Update a step
-router.put("/:stepId", Ctrl.updateStep);
-    
+router.put("/:milestoneId/:stepId", Ctrl.updateStep);
+
 // Delete a step
-router.delete("/:stepId", Ctrl.deleteStep);
+router.delete("/:milestoneId/:stepId", Ctrl.deleteStep);
 
 export default router;

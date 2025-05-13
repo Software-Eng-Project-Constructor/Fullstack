@@ -15,7 +15,8 @@ export const getStepsByMilestone = async (milestoneId: string) => {
 };
 
 export const updateStep = async (stepId: string, data: any) => {
-  return await prisma.step.update({ where: { id: stepId }, data });
+  const tmp = await prisma.step.update({ where: { id: stepId }, data });
+  return tmp;
 };
 
 export const deleteStep = async (stepId: string) => {
@@ -27,7 +28,6 @@ export const isTeamMember = async (userId: string, milestoneId: string) => {
     where: { id: milestoneId},
     select: { projectId: true },
   });
-
   if (!milestone) return false;
 
   const teamMember = await prisma.teamMember.findFirst({
@@ -36,6 +36,5 @@ export const isTeamMember = async (userId: string, milestoneId: string) => {
       projectId: milestone.projectId,
     },
   });
-
   return !!teamMember;
 };

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { FaListCheck, FaCalendar, FaPlus } from 'react-icons/fa6'; // Removed FaUsers
+import { FaListCheck, FaCalendar, FaPlus } from 'react-icons/fa6'; // Keep these from fa6 if they are there
+import { FaEdit, FaTrash } from 'react-icons/fa'; // Import FaEdit and FaTrash from 'react-icons/fa'
 import axios from 'axios';
 import ProgressBar from '../components/progressbar';
 import Swal from 'sweetalert2';
@@ -62,7 +63,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
   const { theme } = useTheme(); // Use theme context
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showAddMilestoneModal, setShowAddMilestoneModal] = useState(false); // Renamed for clarity
   const [newMilestone, setNewMilestone] = useState<Partial<Milestone>>({
     title: '',
     description: '',
@@ -70,7 +71,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     status: 'Not Started',
     tasks: [], // Initialize as empty
   });
-  const [showTaskModal, setShowTaskModal] = useState<string | null>(null);
+  const [showAddTaskModal, setShowAddTaskModal] = useState<string | null>(null);
   // Initialize newTask with the numerical status and date fields, removed assignedTo
   const [newTask, setNewTask] = useState<Omit<Task, 'id' | 'milestoneId'>>({
     title: '',
@@ -79,6 +80,11 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
     startDate: '', // Changed from startsDate to startDate
     dueDate: '', // Initialize dueDate
   });
+
+  // State for editing tasks
+  const [showEditTaskModal, setShowEditTaskModal] = useState<Task | null>(null);
+  const [editedTask, setEditedTask] = useState<Partial<Task> | null>(null);
+
   // Removed contributors state as it's no longer used for task assignment
   // const [contributors, setContributors] = useState<any[]>([]);
 
@@ -288,7 +294,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       });
 
       // Close modal and reset form
-      setShowModal(false);
+      setShowAddMilestoneModal(false); // Use renamed state
       setNewMilestone({
         title: '',
         description: '',
@@ -356,7 +362,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       updateMilestoneStatus(milestoneId);
 
       // Close modal and reset form
-      setShowTaskModal(null);
+      setShowAddTaskModal(null); // Use renamed state
       // Reset newTask state, removed assignedTo
       setNewTask({
         title: '',
@@ -429,6 +435,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
   };
 
   // Handle toggling a task (step) status using the new API
+  // This is for the checkbox, toggling between pending and finished
   const handleToggleTask = async (milestoneId: string, taskId: number) => {
     try {
       const milestone = milestones.find(m => m.id === milestoneId);
@@ -438,20 +445,15 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       if (!taskToToggle) return;
 
       // Determine the new status (toggle between pending and finished)
-      // If current status is finished, set to pending (0), otherwise set to finished (2)
       const newStatus = taskToToggle.status === TASK_STATUS.FINISHED ? TASK_STATUS.PENDING : TASK_STATUS.FINISHED;
 
-      // Prepare the update data for the step
+      // Prepare the update data for the step - only sending status
       const updateData = {
-        ...taskToToggle, // Include existing data
-        status: newStatus, // Update the status
-        // Ensure dates are in ISO format if they exist
-        startDate: taskToToggle.startDate ? new Date(taskToToggle.startDate).toISOString() : undefined,
-        dueDate: taskToToggle.dueDate ? new Date(taskToToggle.dueDate).toISOString() : undefined,
+        status: newStatus,
       };
 
       // Send the update to the API using PUT /api/steps/[stepId]
-      await axios.put(`/api/steps/${taskId}`, updateData);
+      await axios.put(`/api/steps/${milestoneId}/${taskId}`, updateData);
 
       // Update the state with the new task status
       setMilestones(prev =>
@@ -471,7 +473,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       updateMilestoneStatus(milestoneId);
 
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error('Error updating task status:', error);
       Swal.fire({
         title: 'Error!',
         text: 'Failed to update task status.',
@@ -480,6 +482,123 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       });
     }
   };
+
+  // Handle updating a task (step) with all fields
+  const handleUpdateTask = async () => {
+    if (!editedTask || editedTask.id === undefined || !editedTask.milestoneId) {
+      console.error("Edited task data is incomplete.");
+      return;
+    }
+
+    try {
+      // Convert date strings to ISO-8601 format before sending
+      const formattedStartDate = editedTask.startDate ? new Date(editedTask.startDate).toISOString() : undefined;
+      const formattedDueDate = editedTask.dueDate ? new Date(editedTask.dueDate).toISOString() : undefined;
+
+      // Prepare the update data according to the API schema
+      const updateData = {
+        title: editedTask.title,
+        description: editedTask.description,
+        status: editedTask.status,
+        startDate: formattedStartDate,
+        dueDate: formattedDueDate,
+         // Assuming milestoneId is not typically updated via PUT on a step
+        // milestoneId is not typically updated via PUT on a step
+      };
+
+      // Send the update to the API using PUT /api/steps/[stepId]
+      const response = await axios.put(`/api/steps/${editedTask.milestoneId}/${editedTask.id}`, updateData);
+      const updatedStep = response.data;
+
+      // Update the state with the updated task
+      setMilestones(prev =>
+        prev.map(m =>
+          m.id === editedTask.milestoneId
+            ? {
+                ...m,
+                tasks: m.tasks.map(task =>
+                  task.id === updatedStep.id ? updatedStep : task
+                ),
+              }
+            : m
+        )
+      );
+
+      // Update the milestone status based on the new task list
+      updateMilestoneStatus(editedTask.milestoneId);
+
+      // Close modal and reset state
+      setShowEditTaskModal(null);
+      setEditedTask(null);
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'Task updated successfully',
+        icon: 'success',
+        confirmButtonColor: '#f97316',
+      });
+    } catch (error) {
+      console.error('Error updating task:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to update task.',
+        icon: 'error',
+        confirmButtonColor: '#f97316',
+      });
+    }
+  };
+
+   // Handle deleting a task (step)
+   const handleDeleteTask = async (milestoneId: string, taskId: number) => {
+      const result = await Swal.fire({
+         title: 'Delete Task',
+         text: 'Are you sure you want to delete this task?',
+         icon: 'warning',
+         showCancelButton: true,
+         confirmButtonColor: '#d33',
+         cancelButtonColor: '#3085d6',
+         confirmButtonText: 'Yes, delete it!',
+         cancelButtonText: 'Cancel',
+      });
+
+      if (result.isConfirmed) {
+         try {
+            // Send the delete request to the API
+            await axios.delete(`/api/steps/${milestoneId}/${taskId}`);
+
+            // Remove the task from the state
+            setMilestones(prev =>
+               prev.map(m =>
+                  m.id === milestoneId
+                     ? {
+                          ...m,
+                          tasks: m.tasks.filter(task => task.id !== taskId),
+                       }
+                     : m
+               )
+            );
+
+            // Update the milestone status based on the new task list
+            updateMilestoneStatus(milestoneId);
+
+            Swal.fire({
+               title: 'Deleted!',
+               text: 'Task has been deleted.',
+               icon: 'success',
+               confirmButtonColor: '#f97316',
+            });
+         } catch (error) {
+            console.error('Error deleting task:', error);
+            Swal.fire({
+               title: 'Error!',
+               text: 'Failed to delete the task.',
+               icon: 'error',
+               confirmButtonColor: '#f97316',
+            });
+         }
+      }
+   };
+
 
   // Helper to get status text from number
   const getStatusText = (status: number) => {
@@ -490,6 +609,17 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       default: return 'Unknown';
     }
   };
+
+   // Helper to format date string for date input (YYYY-MM-DD)
+   const formatDateForInput = (dateString?: string) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+   };
+
 
   if (loading) {
     return (
@@ -513,7 +643,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
             <p className={styles.subheaderText}>Project ID: {projectId}</p>
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => setShowAddMilestoneModal(true)} // Use renamed state
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
             <FaPlus /> Add Milestone
@@ -579,7 +709,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                   Tasks ({milestone.tasks?.length || 0})
                 </h3>
                 <button
-                  onClick={() => setShowTaskModal(milestone.id)}
+                  onClick={() => setShowAddTaskModal(milestone.id)} // Use renamed state
                   className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-sm flex items-center"
                 >
                   <FaPlus className="mr-1" /> Add Task
@@ -607,10 +737,26 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
                             {task.title}
                           </span>
                         </div>
-                        <div className={`text-sm ${styles.mutedText}`}>
+                        <div className={`text-sm ${styles.mutedText} flex items-center gap-2`}> {/* Added flex and gap */}
                            {/* Display status text */}
                           <span>Status: {getStatusText(task.status)}</span>
-                           {/* Removed assignedTo display */}
+                           {/* Edit Button */}
+                           <button
+                              onClick={() => {
+                                 setShowEditTaskModal(task); // Set the task to be edited
+                                 setEditedTask(task); // Initialize editedTask state
+                              }}
+                              className="text-blue-500 hover:text-blue-600 transition-colors"
+                           >
+                              <FaEdit />
+                           </button>
+                           {/* Delete Button */}
+                           <button
+                              onClick={() => handleDeleteTask(milestone.id, task.id)}
+                              className="text-red-500 hover:text-red-600 transition-colors"
+                           >
+                              <FaTrash />
+                           </button>
                         </div>
                       </div>
                        {/* Display task description if available */}
@@ -641,7 +787,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
       </div>
 
       {/* Add Task Modal */}
-      {showTaskModal && (
+      {showAddTaskModal && (
         <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
           <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
             <h3 className={`text-xl font-bold ${styles.headerText} mb-4`}>Add New Task to Milestone</h3>
@@ -676,34 +822,15 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
               className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
               style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
             />
-            {/* Removed the assignee select input */}
-            {/* <select
-              multiple
-              onChange={e =>
-                setNewTask(prev => ({
-                  ...prev,
-                  assignedTo: Array.from(e.target.selectedOptions).map(option => option.value),
-                }))
-              }
-              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
-              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
-            >
-              <option value="">Select Assignee (optional)</option>
-              {contributors.map((c: { name: string; role: string }) => (
-                <option key={c.name} value={c.name}>
-                  {c.name} ({c.role})
-                </option>
-              ))}
-            </select> */}
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowTaskModal(null)}
+                onClick={() => setShowAddTaskModal(null)} // Use renamed state
                 className={`px-4 py-2 ${styles.buttonSecondary} ${styles.buttonSecondaryText} rounded`}
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleAddTask(showTaskModal)}
+                onClick={() => handleAddTask(showAddTaskModal)} // Use renamed state
                 className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
               >
                 Add Task
@@ -713,8 +840,76 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
         </div>
       )}
 
+      {/* Edit Task Modal */}
+      {showEditTaskModal && editedTask && (
+        <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
+          <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
+            <h3 className={`text-xl font-bold ${styles.headerText} mb-4`}>Edit Task</h3>
+            <input
+              type="text"
+              placeholder="Task Name"
+              required
+              value={editedTask.title || ''}
+              onChange={e => setEditedTask(prev => ({ ...prev, title: e.target.value }))}
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+            />
+            <textarea
+              placeholder="Description"
+              value={editedTask.description || ''}
+              onChange={e => setEditedTask(prev => ({ ...prev, description: e.target.value }))}
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              rows={3}
+            />
+             <input
+              type="date"
+              placeholder="Start Date (Optional)"
+              value={formatDateForInput(editedTask.startDate)} // Format date for input
+              onChange={e => setEditedTask(prev => ({ ...prev, startDate: e.target.value }))}
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
+            />
+             <input
+              type="date"
+              placeholder="Due Date (Optional)"
+              value={formatDateForInput(editedTask.dueDate)} // Format date for input
+              onChange={e => setEditedTask(prev => ({ ...prev, dueDate: e.target.value }))}
+              className={`w-full mb-3 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+              style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
+            />
+             <select
+               value={editedTask.status ?? TASK_STATUS.PENDING} // Default to pending if status is null/undefined
+               onChange={e => setEditedTask(prev => ({ ...prev, status: parseInt(e.target.value) }))}
+               className={`w-full mb-4 p-2 ${styles.inputBg} border ${styles.inputBorder} rounded ${styles.inputText}`}
+               style={{ colorScheme: theme === 'light' ? 'light' : 'dark' }}
+             >
+               <option value={TASK_STATUS.PENDING}>Pending</option>
+               <option value={TASK_STATUS.IN_PROGRESS}>In Progress</option>
+               <option value={TASK_STATUS.FINISHED}>Finished</option>
+             </select>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                   setShowEditTaskModal(null); // Close modal
+                   setEditedTask(null); // Clear edited task state
+                }}
+                className={`px-4 py-2 ${styles.buttonSecondary} ${styles.buttonSecondaryText} rounded`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateTask} // Call update function
+                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Add Milestone Modal */}
-      {showModal && (
+      {showAddMilestoneModal && ( // Use renamed state
         <div className={`fixed inset-0 ${styles.modalOverlay} flex items-center justify-center z-50`}>
           <div className={`${styles.modalBg} p-6 rounded-lg w-96 ${styles.cardShadow}`}>
             <h3 className={`text-xl font-bold ${styles.headerText} mb-4`}>Add New Milestone</h3>
@@ -755,7 +950,7 @@ const ProjectMilestones: React.FC<ProjectMilestonesProps> = ({ projectId }) => {
             </select>
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowAddMilestoneModal(false)} // Use renamed state
                 className={`px-4 py-2 ${styles.buttonSecondary} ${styles.buttonSecondaryText} rounded`}
               >
                 Cancel

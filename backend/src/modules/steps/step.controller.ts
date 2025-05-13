@@ -18,7 +18,6 @@ export const getStep = async (req: Request, res: Response) => {
   try {
     const userId = req.session!.user.id;
     const isAuthorized = await StepService.isTeamMember(userId, req.params.milestoneId);
-    console.log("is authorized", isAuthorized);
     if (!isAuthorized) throw new Error("Forbidden");
     const step = await StepService.getStep(req.params.stepId);
     if (!step) return res.status(404).json({ error: "Step not found" });
@@ -33,8 +32,8 @@ export const getStep = async (req: Request, res: Response) => {
 export const getStepsByMilestone = async (req: Request, res: Response) => {
   try {
     const userId = req.session!.user.id;
+
     const isAuthorized = await StepService.isTeamMember(userId, req.params.milestoneId);
-    console.log("is authorized", isAuthorized);
     if (!isAuthorized) throw new Error("Forbidden");
     const steps = await StepService.getStepsByMilestone(req.params.milestoneId);
     res.json(steps);
@@ -48,11 +47,13 @@ export const getStepsByMilestone = async (req: Request, res: Response) => {
 export const updateStep = async (req: Request, res: Response) => {
   try {
     const userId = req.session!.user.id;
-    const isAuthorized = await StepService.isTeamMember(userId, req.params.milestoneId);
+    const milestoneId = req.params.milestoneId;
+    const isAuthorized = await StepService.isTeamMember(userId, milestoneId);
     if (!isAuthorized) throw new Error("Forbidden");
     const step = await StepService.updateStep(req.params.stepId, req.body);
     res.json(step);
   } catch (error) {
+    console.error("Error updating step:", error);
     res.status(500).json({ error: "Failed to update step" });
   }
 };

@@ -36,10 +36,10 @@ export const deleteTeamMember = async (req: Request, res: Response) => {
 
   try {
     const result = await Service.deleteTeamMember(currentUserId, projectId, targetUserId);
-    if (result.count === 0) return res.status(404).json({ message: "Team member not found." });
 
     res.json({ message: "Team member removed." });
   } catch (err: any) {
+    console.error("Error deleting team member:", err);
     res.status(403).json({ message: err.message });
   }
 };
