@@ -206,7 +206,7 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5001/api/teams/${memberId}`);
+        await axios.delete(`http://localhost:5001/api/teams/${projectId}/${memberId}`);
         fetchMembers();
         
         // Show success notification
