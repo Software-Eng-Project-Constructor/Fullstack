@@ -1,13 +1,10 @@
-// modules/events/events.route.ts
 import { Router } from "express";
-import * as Ctrl from "./evets.controller";
+import * as Ctrl from "./event.controller";
 
 const router = Router();
 
-router.get("/", Ctrl.getAllEvents);
-router.post("/", Ctrl.createEvent);
-router.delete("/:id", Ctrl.deleteEvent);
-router.delete("/", Ctrl.deleteEventByMilestone);
+router.post("/", Ctrl.addEvent);
+router.delete("/:eventId", Ctrl.removeEvent);
+router.get("/project/:projectId", Ctrl.getEventsForProject);
 
 export default router;
-
