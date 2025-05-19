@@ -239,16 +239,16 @@ function Dashboard() {
       };
     } else {
       return {
-        mainBg: "bg-gray-900",
-        headerBg: "bg-gray-900",
-        headerBorder: "border-gray-800",
-        projectSectionBg: "bg-[#1C1D1D]",
-        cardBg: "bg-gray-800",
-        modalBg: "bg-[#1C1D1D]",
-        inputBg: "bg-[#0F0F0F]",
-        textColor: "text-white",
+        mainBg: "bg-[#141414]",
+        headerBg: "bg-[#1A1A1A]",
+        headerBorder: "border-[#2A2A2A]",
+        projectSectionBg: "bg-[#181818]",
+        cardBg: "bg-[#202020]",
+        modalBg: "bg-[#202020]",
+        inputBg: "bg-[#252525]",
+        textColor: "text-gray-200",
         headerTextColor: "text-white",
-        tabContentBg: "bg-gray-900",
+        tabContentBg: "bg-[#191919]",
       };
     }
   };
@@ -256,7 +256,7 @@ function Dashboard() {
   const themeClasses = getThemeClasses();
 
   return (
-    <div className={`flex h-screen overflow-hidden ${themeClasses.mainBg}`}>
+    <div className={`flex h-screen flex-1 w-screen ${themeClasses.mainBg}`}>
       <Sidebar
         isOpen={isSidebarOpen}
         activeTab={activeTab}
@@ -264,16 +264,12 @@ function Dashboard() {
         toggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
       />
 
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isSidebarOpen ? "ml-64" : "ml-0"
-        }`}
-      >
+      <div className="flex flex-1 flex-col transition-all duration-300 pt-5">
         <div
-          className={`flex justify-between items-center p-4 ${themeClasses.headerBg} border-b ${themeClasses.headerBorder}`}
+          className={`flex justify-between items-center p-4 pt-6 pb-6 ${themeClasses.headerBg} border-b ${themeClasses.headerBorder}`}
         >
           <div
-            className={`ml-10 text-xl font-semibold ${themeClasses.headerTextColor}`}
+            className={`ml-7 text-xl font-semibold ${themeClasses.headerTextColor}`}
           >
             Dashboard
           </div>
@@ -303,109 +299,122 @@ function Dashboard() {
               <span className="text-sm">Welcome, {user.name}!</span>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm"
+                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white text-sm mr-7"
               >
                 Logout
               </button>
             </div>
           )}
         </div>
-
         <div className={`${themeClasses.projectSectionBg} p-4`}>
-          <h3 className={`${themeClasses.textColor} mb-2`}>Owned Projects</h3>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {ownedProjects.map((project) => (
-              <div key={project.id} className="relative flex items-center">
+          <div className="flex items-center gap-6 flex-wrap mx-7 my-4">
+            {/* Owned Projects */}
+            <div className="flex items-center gap-3">
+              {ownedProjects.map((project) => (
+                <div
+                  key={project.id}
+                  className="relative flex items-center gap-2"
+                >
+                  <button
+                    onClick={() => setActiveProjectId(project.id)}
+                    className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 shadow-sm border ${
+                      project.id === activeProjectId
+                        ? "bg-orange-600 text-white scale-105 z-10"
+                        : theme === "light"
+                          ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    <span className="whitespace-nowrap">{project.name}</span>
+                  </button>
+
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteProject(project.id);
+                    }}
+                    className=" z-20 text-red-600 hover:text-red-700 text-base cursor-pointer"
+                    title="Delete project"
+                  >
+                    <FaTimes />
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Member Projects */}
+            <div className="flex items-center gap-2 border-l border-gray-600 pl-4">
+              {memberProjects.map((project) => (
                 <button
+                  key={project.id}
                   onClick={() => setActiveProjectId(project.id)}
-                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
+                  className={`px-4 py-2 rounded-md border border-dashed transition-all duration-200 ${
                     project.id === activeProjectId
-                      ? "bg-orange-600 text-white"
+                      ? "border-orange-600 text-orange-500 scale-105 bg-gray-900"
                       : theme === "light"
-                        ? "bg-gray-300 text-gray-800 hover:bg-gray-400"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        ? "border-gray-400 text-gray-800 hover:bg-gray-200"
+                        : "border-gray-600 text-gray-300 hover:bg-gray-800"
                   }`}
                 >
-                  <span>{project.name}</span>
+                  {project.name}
                 </button>
+              ))}
+            </div>
 
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteProject(project.id);
-                  }}
-                  className="ml-2 text-red-600 hover:text-red-700 text-lg cursor-pointer"
-                >
-                  <FaTimes />
-                </span>
-              </div>
-            ))}
-
-            <button
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center"
-              onClick={() => setIsModalOpen(true)}
-            >
-              <span className="mr-2">+</span>
-            </button>
-          </div>
-
-          <h3 className={`${themeClasses.textColor} mb-2`}>Member Projects</h3>
-          <div className="flex flex-wrap gap-2">
-            {memberProjects.map((project) => (
-              <div key={project.id} className="relative flex items-center">
-                <button
-                  onClick={() => setActiveProjectId(project.id)}
-                  className={`px-4 py-2 rounded flex items-center justify-between space-x-2 ${
-                    project.id === activeProjectId
-                      ? "bg-orange-600 text-white"
-                      : theme === "light"
-                        ? "bg-gray-300 text-gray-800 hover:bg-gray-400"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                  }`}
-                >
-                  <span>{project.name}</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className={`${themeClasses.modalBg} p-6 rounded-lg w-96`}>
-              <h3 className={`${themeClasses.textColor} text-lg mb-4`}>
-                Create New Project
-              </h3>
-              <input
-                className={`${themeClasses.inputBg} ${theme === "light" ? "text-gray-800" : "text-white"} w-full mb-4 p-2 rounded border ${theme === "light" ? "border-gray-300" : "border-gray-700"}`}
-                type="text"
-                placeholder="Project Name"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
-                  onClick={handleAddProject}
-                >
-                  Create
-                </button>
-                <button
-                  className="bg-red-600 text-white px-4 py-1 rounded"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-              </div>
+            {/* Add Project */}
+            <div className="ml-auto">
+              <button
+                type="button"
+                className="bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded shadow-sm"
+                onClick={() => setIsModalOpen(true)}
+              >
+                + New
+              </button>
             </div>
           </div>
-        )}
+
+          {/* Modal – SAME AS ORIGINAL */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 ">
+              <div className={`${themeClasses.modalBg} p-6 rounded-lg w-96`}>
+                <h3 className={`${themeClasses.textColor} text-lg mb-4`}>
+                  Create New Project
+                </h3>
+                <input
+                  className={`${themeClasses.inputBg} ${
+                    theme === "light" ? "text-gray-800" : "text-white"
+                  } w-full mb-4 p-2 rounded border ${
+                    theme === "light" ? "border-gray-300" : "border-gray-700"
+                  }`}
+                  type="text"
+                  placeholder="Project Name"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 rounded"
+                    onClick={handleAddProject}
+                  >
+                    Create
+                  </button>
+                  <button
+                    className="bg-red-600 text-white px-4 py-1 rounded"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div
-          className={`tab-content flex-1 overflow-y-auto p-4 ${themeClasses.tabContentBg} ${themeClasses.textColor}`}
+          className={`tab-content flex-1 overflow-y-auto p-4 mx-7 ${themeClasses.tabContentBg} ${themeClasses.textColor}`}
         >
           {activeTab === "Overview" && activeProjectId && (
             <OverviewPage

@@ -134,16 +134,6 @@ const Settings = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This is irreversible."
-      )
-    ) {
-      // Call delete API here
-    }
-  };
-
   // Handle theme change from dropdown
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value as ThemeType;
@@ -151,7 +141,13 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-4 rounded-xl" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}>
+    <div
+      className="p-5 my-5 max-w-5xl mx-auto space-y-6 rounded-xl"
+      style={{
+        backgroundColor: "var(--bg-color)",
+        color: "var(--text-color)",
+      }}
+    >
       <h1 className="text-3xl font-bold">Settings</h1>
 
       {successMsg && (
@@ -207,8 +203,13 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Description</label>
           <textarea
-            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
-            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+            className="w-full rounded p-2 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+              borderColor:
+                theme === "light" ? "#cbd5e1" : "var(--border-color)",
+              color: theme === "light" ? "#0f172a" : "var(--text-color)",
+            }}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -217,8 +218,13 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Account Name</label>
           <input
-            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
-            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+            className="w-full rounded p-2 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+              borderColor:
+                theme === "light" ? "#cbd5e1" : "var(--border-color)",
+              color: theme === "light" ? "#0f172a" : "var(--text-color)",
+            }}
             value={accountName}
             onChange={(e) => setAccountName(e.target.value)}
           />
@@ -228,8 +234,13 @@ const Settings = () => {
           <label className="block font-medium mb-1">Email Address</label>
           <input
             type="email"
-            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
-            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+            className="w-full rounded p-2 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+              borderColor:
+                theme === "light" ? "#cbd5e1" : "var(--border-color)",
+              color: theme === "light" ? "#0f172a" : "var(--text-color)",
+            }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -238,12 +249,15 @@ const Settings = () => {
           </p>
         </div>
 
-        <div className="border-t border-gray-700 pt-4">
-          <label className="block font-medium mb-1 justify-between items-center">
+        <div
+          className="border-t pt-4"
+          style={{ borderColor: "var(--border-color)" }}
+        >
+          <label className="block font-medium mb-1">
             <span>Password</span>
             <button
               type="button"
-              className="text-sm text-blue-400 hover:underline"
+              className="text-sm text-blue-400 hover:underline ml-3"
               onClick={() => setChangePasswordMode((prev) => !prev)}
             >
               {changePasswordMode ? "Cancel" : "Change Password"}
@@ -253,27 +267,39 @@ const Settings = () => {
           {changePasswordMode && (
             <div className="space-y-3 mt-2">
               <input
-                className="w-full rounded p-2 focus:ring focus:ring-blue-500"
-                style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+                className="w-full rounded p-2 focus:outline-none focus:ring-2"
                 type="password"
                 placeholder="Old Password"
+                style={{
+                  backgroundColor:
+                    theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+                  borderColor:
+                    theme === "light" ? "#cbd5e1" : "var(--border-color)",
+                  color: theme === "light" ? "#0f172a" : "var(--text-color)",
+                }}
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
               />
               <div className="relative">
                 <input
-                  className="w-full rounded p-2 pr-20 focus:ring focus:ring-blue-500"
-                  style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+                  className="w-full rounded p-2 pr-20 focus:outline-none focus:ring-2"
                   type={showNewPassword ? "text" : "password"}
                   placeholder="New Password"
+                  style={{
+                    backgroundColor:
+                      theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+                    borderColor:
+                      theme === "light" ? "#cbd5e1" : "var(--border-color)",
+                    color: theme === "light" ? "#0f172a" : "var(--text-color)",
+                  }}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-3 text-sm hover:text-blue-400"
-                  style={{ color: theme === 'light' ? '#64748b' : '#94a3b8' }}
+                  className="absolute inset-y-0 right-3 text-sm hover:text-[var(--primary-color-hover)]"
+                  style={{ color: "var(--muted-text-color)" }}
                 >
                   {showNewPassword ? "Hide" : "Show"}
                 </button>
@@ -290,8 +316,13 @@ const Settings = () => {
         <div>
           <label className="block font-medium mb-1">Theme</label>
           <select
-            className="w-full rounded p-2 focus:ring focus:ring-blue-500"
-            style={{ backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', borderColor: theme === 'light' ? '#cbd5e1' : '#475569' }}
+            className="w-full rounded p-2 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+              borderColor:
+                theme === "light" ? "#cbd5e1" : "var(--border-color)",
+              color: theme === "light" ? "#0f172a" : "var(--text-color)",
+            }}
             value={theme}
             onChange={handleThemeChange}
           >
@@ -301,37 +332,44 @@ const Settings = () => {
           </select>
         </div>
 
-        <div className="flex items-center justify-between rounded p-3 border" 
-          style={{ 
-            backgroundColor: theme === 'light' ? '#f1f5f9' : '#1e293b', 
-            borderColor: theme === 'light' ? '#cbd5e1' : '#475569' 
-          }}>
+        <div
+          className="flex items-center justify-between rounded p-3 border"
+          style={{
+            backgroundColor: theme === "light" ? "#f1f5f9" : "var(--card-bg)",
+            borderColor: theme === "light" ? "#cbd5e1" : "var(--border-color)",
+            color: theme === "light" ? "#0f172a" : "var(--text-color)",
+          }}
+        >
           <span>Enable Notification Sounds</span>
           <input
             type="checkbox"
             checked={audioNotification}
             onChange={() => setAudioNotification(!audioNotification)}
-            className="h-5 w-5 rounded border-gray-500 text-blue-500 focus:ring-blue-500"
+            className="h-5 w-5 rounded border-gray-500 text-[var(--primary-color)] focus:ring-[var(--primary-color)]"
           />
         </div>
       </div>
 
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-end mt-6">
         <button
-          className={`px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 focus:ring focus:ring-blue-500 ${
-            (!validEmail || (changePasswordMode && !validNewPassword)) &&
-            "opacity-50 cursor-not-allowed"
-          }`}
+          className={`px-4 py-2 rounded-lg font-semibold text-white focus:ring-2`}
+          style={{
+            backgroundColor:
+              theme === "light" ? "#3b82f6" : "var(--primary-color)",
+            color: "white",
+            opacity:
+              !validEmail || (changePasswordMode && !validNewPassword)
+                ? 0.5
+                : 1,
+            cursor:
+              !validEmail || (changePasswordMode && !validNewPassword)
+                ? "not-allowed"
+                : "pointer",
+          }}
           onClick={handleSave}
           disabled={!validEmail || (changePasswordMode && !validNewPassword)}
         >
           Save Changes
-        </button>
-        <button
-          className="px-4 py-2 rounded-lg font-semibold bg-red-600 hover:bg-red-700 focus:ring focus:ring-red-500"
-          onClick={handleDeleteAccount}
-        >
-          Delete Account
         </button>
       </div>
     </div>

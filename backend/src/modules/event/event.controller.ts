@@ -7,7 +7,7 @@ export const addEvent = async (req: Request, res: Response) => {
   const parsed = createEventSchema.safeParse(req.body);
   console.log("Parsed Event Data:", parsed.data);
 
-  
+
   if (!parsed.success) return res.status(400).json(parsed.error);
 
   try {

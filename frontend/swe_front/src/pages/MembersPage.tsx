@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaUserPlus, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext"; // Import ThemeContext
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 axios.defaults.withCredentials = true;
 
@@ -39,67 +39,67 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
   // Define theme-specific styles
   const getThemeStyles = () => {
-    if (theme === 'light') {
+    if (theme === "light") {
       return {
         // Main container
-        containerBg: 'bg-white',
-        containerShadow: 'shadow-md',
-        
+        containerBg: "bg-white",
+        containerShadow: "shadow-md",
+
         // Headers and text
-        headerText: 'text-gray-800',
-        normalText: 'text-gray-600',
-        mutedText: 'text-gray-500',
-        
+        headerText: "text-gray-800",
+        normalText: "text-gray-600",
+        mutedText: "text-gray-500",
+
         // Inputs and selects
-        inputBg: 'bg-gray-100',
-        inputText: 'text-gray-800',
-        inputBorder: 'border-gray-300',
-        inputFocus: 'focus:ring-blue-500',
-        
+        inputBg: "bg-gray-100",
+        inputText: "text-gray-800",
+        inputBorder: "border-gray-300",
+        inputFocus: "focus:ring-blue-500",
+
         // Tables
-        tableBg: 'bg-white',
-        tableHeaderBg: 'bg-gray-200',
-        tableHeaderText: 'text-gray-700',
-        tableDivider: 'divide-gray-200',
-        tableHover: 'hover:bg-gray-100',
-        
+        tableBg: "bg-white",
+        tableHeaderBg: "bg-gray-200",
+        tableHeaderText: "text-gray-700",
+        tableDivider: "divide-gray-200",
+        tableHover: "hover:bg-gray-100",
+
         // Alerts
-        errorBg: 'bg-red-100',
-        successBg: 'bg-green-100',
-        
+        errorBg: "bg-red-100",
+        successBg: "bg-green-100",
+
         // Avatar placeholder
-        avatarBg: 'bg-gray-300',
+        avatarBg: "bg-gray-300",
       };
     } else {
       return {
         // Main container
-        containerBg: 'bg-gray-900',
-        containerShadow: 'shadow-lg',
-        
+        containerBg: "bg-[#141414]", // darker than gray-900
+        containerShadow: "shadow-lg",
+
         // Headers and text
-        headerText: 'text-white',
-        normalText: 'text-white',
-        mutedText: 'text-gray-400',
-        
+        headerText: "text-white",
+        normalText: "text-gray-200",
+        mutedText: "text-gray-400",
+
         // Inputs and selects
-        inputBg: 'bg-gray-800',
-        inputText: 'text-white',
-        inputBorder: 'border-gray-700',
-        inputFocus: 'focus:ring-blue-500',
-        
+        inputBg: "bg-[#252525]", // was gray-800 → lighter for contrast
+        inputText: "text-white",
+        inputBorder: "border-[#333333]", // cleaner than gray-700
+        inputFocus: "focus:ring-orange-500",
+
         // Tables
-        tableBg: 'bg-gray-800',
-        tableHeaderBg: 'bg-gray-700',
-        tableHeaderText: 'text-gray-300',
-        tableDivider: 'divide-gray-700',
-        tableHover: 'hover:bg-gray-700',
-        
-        // Alerts
-        errorBg: 'bg-red-100', // Keeping alert colors consistent for better visibility
-        successBg: 'bg-green-100',
-        
+        tableBg: "bg-[#202020]", // was gray-800 → lifted slightly
+        tableHeaderBg: "bg-[#1A1A1A]", // was gray-700
+        tableHeaderText: "text-gray-300",
+        tableDivider: "divide-[#2A2A2A]", // matches new border style
+        tableHover: "hover:bg-[#262626]", // subtle row highlight
+
+        // Alerts (unchanged)
+        errorBg: "bg-red-100",
+        successBg: "bg-green-100",
+
         // Avatar placeholder
-        avatarBg: 'bg-gray-600',
+        avatarBg: "bg-[#3A3A3A]", // was gray-600 → consistent with new dark neutrals
       };
     }
   };
@@ -112,7 +112,9 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
   const fetchMembers = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/projects/${projectId}/members`);
+      const response = await axios.get(
+        `http://localhost:5001/api/projects/${projectId}/members`
+      );
       setMembers(response.data);
     } catch (error) {
       console.error("Error fetching members:", error);
@@ -140,8 +142,11 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
     try {
       await checkSession();
-      
-      const response = await axios.post("http://localhost:5001/api/teams/", payload);
+
+      const response = await axios.post(
+        "http://localhost:5001/api/teams/",
+        payload
+      );
       console.log("User added successfully:", response.data);
       setInputValue("");
       setRole("Member");
@@ -149,10 +154,10 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
 
       // Show success notification
       Swal.fire({
-        title: 'Success!',
-        text: 'Team member has been added successfully',
-        icon: 'success',
-        confirmButtonColor: '#f97316',
+        title: "Success!",
+        text: "Team member has been added successfully",
+        icon: "success",
+        confirmButtonColor: "#f97316",
       });
     } catch (error: any) {
       console.error("Error adding user:", error);
@@ -163,27 +168,27 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
           setInputValue("");
           setRole("Member");
           fetchMembers();
-          
+
           Swal.fire({
-            title: 'Success!',
-            text: 'Team member has been added successfully',
-            icon: 'success',
-            confirmButtonColor: '#f97316',
+            title: "Success!",
+            text: "Team member has been added successfully",
+            icon: "success",
+            confirmButtonColor: "#f97316",
           });
         } catch (retryError) {
           Swal.fire({
-            title: 'Error!',
-            text: 'Failed to add team member',
-            icon: 'error',
-            confirmButtonColor: '#f97316',
+            title: "Error!",
+            text: "Failed to add team member",
+            icon: "error",
+            confirmButtonColor: "#f97316",
           });
         }
       } else {
         Swal.fire({
-          title: 'Error!',
-          text: 'Failed to add team member',
-          icon: 'error',
-          confirmButtonColor: '#f97316',
+          title: "Error!",
+          text: "Failed to add team member",
+          icon: "error",
+          confirmButtonColor: "#f97316",
         });
       }
     } finally {
@@ -194,46 +199,55 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
   const handleRemoveMember = async (memberId: string) => {
     // Add confirmation dialog
     const result = await Swal.fire({
-      title: 'Remove Team Member',
-      text: 'Are you sure you want to remove this team member?',
-      icon: 'warning',
+      title: "Remove Team Member",
+      text: "Are you sure you want to remove this team member?",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, remove them!',
-      cancelButtonText: 'Cancel',
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, remove them!",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5001/api/teams/${projectId}/${memberId}`);
+        await axios.delete(
+          `http://localhost:5001/api/teams/${projectId}/${memberId}`
+        );
         fetchMembers();
-        
+
         // Show success notification
         Swal.fire({
-          title: 'Removed!',
-          text: 'Team member has been removed successfully',
-          icon: 'success',
-          confirmButtonColor: '#f97316',
+          title: "Removed!",
+          text: "Team member has been removed successfully",
+          icon: "success",
+          confirmButtonColor: "#f97316",
         });
       } catch (error) {
         console.error("Error removing team member:", error);
         Swal.fire({
-          title: 'Error!',
-          text: 'Failed to remove team member',
-          icon: 'error',
-          confirmButtonColor: '#f97316',
+          title: "Error!",
+          text: "Failed to remove team member",
+          icon: "error",
+          confirmButtonColor: "#f97316",
         });
       }
     }
   };
 
   return (
-    <div className={`p-8 ${styles.containerBg} rounded-lg ${styles.containerShadow}`}>
-      <h1 className={`text-3xl font-bold ${styles.headerText} mb-6`}>Project Members</h1>
+    <div
+      className={`p-8 ${styles.containerBg} rounded-lg ${styles.containerShadow}`}
+    >
+      <h1 className={`text-3xl font-bold ${styles.headerText} mb-6`}>
+        Project Members
+      </h1>
 
       <div className="mb-6">
-        <label htmlFor="email" className={`block text-sm font-medium ${styles.mutedText} mb-2`}>
+        <label
+          htmlFor="email"
+          className={`block text-sm font-medium ${styles.mutedText} mb-2`}
+        >
           Add new member
         </label>
         <div className="flex mb-2">
@@ -248,62 +262,112 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className={`${styles.inputBg} ${styles.inputText} px-4 py-2 border-l ${styles.inputBorder} focus:outline-none focus:ring-2 ${styles.inputFocus}`}
+            className={`bg-[#252525] text-white px-4 py-2 border-l border-[#333333] focus:outline-none focus:ring-2 focus:ring-orange-500`}
           >
             <option value="Admin">Admin</option>
             <option value="Member">Member</option>
             <option value="Viewer">Viewer</option>
           </select>
+
           <button
-            className={`bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`bg-[#f97316] hover:bg-[#ea580c] text-white px-4 py-2 rounded-r focus:outline-none focus:ring-2 focus:ring-orange-500 flex items-center ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             onClick={handleAdd}
             disabled={isLoading}
           >
             {isLoading ? (
               <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             ) : (
               <FaUserPlus className="mr-2" />
             )}
-            {isLoading ? 'Adding...' : 'Add Member'}
+            {isLoading ? "Adding..." : "Add Member"}
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <div
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4"
+          role="alert"
+        >
           <p>{error}</p>
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+        <div
+          className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4"
+          role="alert"
+        >
           <p>{successMessage}</p>
         </div>
       )}
 
       {/* Members List */}
       <div className="mt-8">
-        <h2 className={`text-xl font-semibold ${styles.headerText} mb-4`}>Current Members</h2>
+        <h2 className={`text-xl font-semibold ${styles.headerText} mb-4`}>
+          Current Members
+        </h2>
         {isLoadingMembers ? (
           <div className="flex justify-center items-center h-32">
-            <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              className="animate-spin h-8 w-8 text-blue-500"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
           </div>
         ) : members.length === 0 ? (
           <p className={styles.mutedText}>No members found in this project.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className={`min-w-full ${styles.tableBg} rounded-lg overflow-hidden`}>
+            <table
+              className={`min-w-full ${styles.tableBg} rounded-lg overflow-hidden`}
+            >
               <thead className={styles.tableHeaderBg}>
                 <tr>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Name</th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Email</th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}>Role</th>
+                  <th
+                    className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}
+                  >
+                    Name
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}
+                  >
+                    Email
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-left text-xs font-medium ${styles.tableHeaderText} uppercase tracking-wider`}
+                  >
+                    Role
+                  </th>
                 </tr>
               </thead>
               <tbody className={`${styles.tableDivider}`}>
@@ -318,23 +382,35 @@ const MembersPage: React.FC<MemberPageProps> = ({ projectId }) => {
                             alt={member.user.name}
                           />
                         ) : (
-                          <div className={`h-8 w-8 rounded-full ${styles.avatarBg} mr-3 flex items-center justify-center`}>
+                          <div
+                            className={`h-8 w-8 rounded-full ${styles.avatarBg} mr-3 flex items-center justify-center`}
+                          >
                             <span className="text-white text-sm">
                               {member.user.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
-                        <span className={styles.normalText}>{member.user.name}</span>
+                        <span className={styles.normalText}>
+                          {member.user.name}
+                        </span>
                       </div>
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap ${styles.mutedText}`}>{member.user.email}</td>
+                    <td
+                      className={`px-6 py-4 whitespace-nowrap ${styles.mutedText}`}
+                    >
+                      {member.user.email}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center justify-between">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          member.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                          member.role === 'Member' ? 'bg-green-100 text-green-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            member.role === "Admin"
+                              ? "bg-purple-100 text-purple-800"
+                              : member.role === "Member"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
                           {member.role}
                         </span>
                         <button

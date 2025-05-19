@@ -5,8 +5,8 @@
   /* Default theme (dark) */
   --bg-color: #08090a;
   --text-color: #e4e4e7;
-  --primary-color: #3b82f6;
-  --sidebar-bg: #0B0C0D;
+  --primary-color: #0f0f0f;
+  --sidebar-bg: #0b0c0d;
   --input-bg: #1e293b;
   --border-color: #475569;
 }
@@ -14,7 +14,7 @@
 .theme-light {
   --bg-color: #ffffff;
   --text-color: #000000;
-  --primary-color: #3b82f6;
+  --primary-color: #0f0f0f;
   --sidebar-bg: #f1f5f9;
   --input-bg: #f1f5f9;
   --border-color: #cbd5e1;
@@ -23,8 +23,8 @@
 .theme-dark {
   --bg-color: #0f172a;
   --text-color: #e2e8f0;
-  --primary-color: #3b82f6;
-  --sidebar-bg: #0B0C0D;
+  --primary-color: #0f0f0f;
+  --sidebar-bg: #0b0c0d;
   --input-bg: #1e293b;
   --border-color: #475569;
 }
@@ -64,12 +64,21 @@ body {
   line-height: 1.6;
   color: var(--text-color);
   background-color: var(--bg-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Apply theme transitions to common elements */
-button, input, select, textarea, a {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+button,
+input,
+select,
+textarea,
+a {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* Utility Classes */
@@ -101,7 +110,9 @@ button, input, select, textarea, a {
 }
 
 /* Form elements with theme support */
-input, select, textarea {
+input,
+select,
+textarea {
   background-color: var(--input-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -115,13 +126,15 @@ table {
 
 /* Ensure dark scrollbars in dark mode */
 @media (prefers-color-scheme: dark) {
-  :root.theme-dark, :root.theme-adaptive {
+  :root.theme-dark,
+  :root.theme-adaptive {
     color-scheme: dark;
   }
 }
 
 @media (prefers-color-scheme: light) {
-  :root.theme-light, :root.theme-adaptive {
+  :root.theme-light,
+  :root.theme-adaptive {
     color-scheme: light;
   }
 }

@@ -15,7 +15,6 @@ import milestoneRoutes from "./modules/milestones/milestone.routes";
 
 const app = express();
 
-// ✅ FIRST: CORS must be before any cookies or sessions
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true,
@@ -25,7 +24,6 @@ app.options("*", cors({
   credentials: true,
 }));
 
-// ✅ THEN: cookie & session
 app.use(cookieParser());
 app.use(sessionMiddleware);
 
@@ -34,20 +32,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Then: body parsing
 app.use(express.json({ limit: '10mb' }))
 
-// ✅ Then: routes
 app.use("/api/auth", authRoutes);                    // open
 app.use("/api/projects", authGuard, projectRoutes);  // protected
 app.use("/api/tasks", authGuard, taskRoutes);        // protected
 app.use("/api/teams", authGuard, teamRoutes);        // protected
 app.use("/api/milestones", authGuard, milestoneRoutes); // protected
 app.use("/api/events", eventsRouter);
-app.use("/api/users", authGuard, userRoutes); //Salamario code
-app.use("/api/steps", authGuard, stepRoutes); //
+app.use("/api/users", authGuard, userRoutes); 
+app.use("/api/steps", authGuard, stepRoutes); 
 
-// ✅ 6. Health check
 app.get("/", (_req, res) => res.send("Backend is running"));
 
 export default app;

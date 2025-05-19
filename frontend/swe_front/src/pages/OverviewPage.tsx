@@ -261,9 +261,9 @@ const OverviewPage: React.FC<OverviewPageProps> = ({
 
   return (
     <div
-      className={`max-w-6xl mx-auto p-8 ${styles.mainBg} rounded-lg ${styles.mainShadow} ${styles.mainText}`}
+      className={`max-w-8xl mx-auto p-8 ${styles.mainBg} rounded-lg ${styles.mainShadow} ${styles.mainText}`}
     >
-      <div className="mb-6 text-center">
+      <div className="mb-8 text-center">
         <h1 className={`text-3xl font-bold ${styles.headerText}`}>
           Project Overview
         </h1>
