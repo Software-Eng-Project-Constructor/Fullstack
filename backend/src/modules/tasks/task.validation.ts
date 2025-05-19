@@ -10,7 +10,7 @@ export const createTaskSchema = z.object({
   milestoneId: z.string().optional(),
   projectId: z.union([z.number(), z.string().transform(Number)]),
   createdById: z.string(), 
-  assignedTo: z.array(z.string()).optional() // <-- this
+  assignedTo: z.array(z.string()).optional() 
 });
 
 export const updateTaskSchema = createTaskSchema.partial();

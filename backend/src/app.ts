@@ -12,6 +12,7 @@ import eventsRouter from "./modules/event/event.routes"
 import stepRoutes from "./modules/steps/step.routes";
 import userRoutes from "./modules/users/users.routes";
 import milestoneRoutes from "./modules/milestones/milestone.routes";
+import actionRoutes from "./modules/actions/action.routes";
 
 const app = express();
 
@@ -42,7 +43,9 @@ app.use("/api/milestones", authGuard, milestoneRoutes); // protected
 app.use("/api/events", eventsRouter);
 app.use("/api/users", authGuard, userRoutes); 
 app.use("/api/steps", authGuard, stepRoutes); 
+app.use("/api/actions", authGuard, actionRoutes);  // protected
 
 app.get("/", (_req, res) => res.send("Backend is running"));
 
 export default app;
+

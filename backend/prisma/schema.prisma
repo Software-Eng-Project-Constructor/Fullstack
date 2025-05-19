@@ -29,6 +29,8 @@ model User {
   comments        Comment[]
   notifications   Notification[]
   ownedProjects   Project[]        @relation("OwnerProjects")
+
+  assignedActions Action[] @relation("AssignedActions")
 }
 
 model Project {
@@ -49,8 +51,7 @@ model Project {
   statuses    TaskStatus[]
   budgets     Budget[]
   expenses    Expense[]
-  events Event[]
-
+  events      Event[]
 }
 
 model TeamMember {
@@ -105,6 +106,25 @@ model Task {
   comments        Comment[]
 }
 
+model Action {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+
+  status   Int @default(0) // 0 = pending, 1 = in progress, 2 = done
+  priority Int @default(0) // 0 = low, 1 = medium, 2 = high
+
+  stepId       String
+  assignedToId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  step       Step  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  assignedTo User? @relation("AssignedActions", fields: [assignedToId], references: [id], onDelete: SetNull)
+}
+
+
 model Step {
   id          String    @id @default(uuid())
   title       String
@@ -118,6 +138,7 @@ model Step {
   updatedAt DateTime @updatedAt
 
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  actions   Action[]
 }
 
 model TaskStatus {
@@ -187,12 +208,12 @@ model Event {
   description String
   startDate   DateTime
   endDate     DateTime
-  priority    String   // e.g., "low", "medium", "high"
-  category    String   // e.g., "work", "personal"
-  projectId   Int      // required: links to Project
+  priority    String // e.g., "low", "medium", "high"
+  category    String // e.g., "work", "personal"
+  projectId   Int // required: links to Project
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
